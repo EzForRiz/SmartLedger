@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Ledger</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Smart Ledger</h1>
+
+        <!-- FORM -->
+        <form id="expenseForm">
+            <input type="date" id="date" required>
+            <input type="time" id="time">
+            <input type="number" id="amount" placeholder="Amount" required>
+
+            <select id="useType" required>
+                <option value="">Select Type</option>
+                <option value="Personal">Personal</option>
+                <option value="Professional">Professional</option>
+            </select>
+
+            <input type="text" id="whereSpent" placeholder="Where spent" required>
+            <input type="text" id="paymentMethod" placeholder="Payment method" required>
+
+            <button>Add</button>
+        </form>
+
+        <div id="message"></div>
+
+        <!-- FILTER -->
+        <select id="expenseTypeFilter">
+            <option value="all">All</option>
+            <option value="Personal">Personal</option>
+            <option value="Professional">Professional</option>
+        </select>
+
+        <!-- INSIGHTS -->
+        <div id="insightsBox"></div>
+
+        <!-- TABLE -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Where</th>
+                    <th>Payment</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="expensesTableBody"></tbody>
+        </table>
+
+    </div>
+
+    <script>
+        const form = document.getElementById("expenseForm");
+        const tableBody = document.getElementById("expensesTableBody");
+        const filter = document.getElementById("expenseTypeFilter");
+        const messageDiv = document.getElementById("message");
+
+        function showMessage(msg) {
+            messageDiv.textContent = msg;
+            setTimeout(() => messageDiv.textContent = "", 2000);
+        }
+
+        async function fetchExpenses() {
+            const res = await fetch("/expenses/");
+            const data = await res.json();
+
+            const selected = filter.value;
+
+            const filtered = selected === "all"
+                ? data
+                : data.filter(e => e.use_type === selected);
+
+            render(filtered);
+        }
+
+        function render(expenses) {
+            tableBody.innerHTML = "";
+
+            if (!expenses.length) {
+                tableBody.innerHTML = "<tr><td colspan='7'>No Data</td></tr>";
+                return;
+            }
+
+            expenses.forEach(e => {
+                tableBody.innerHTML += `
+        <tr>
+            <td>${e.date}</td>
+            <td>${e.time || "-"}</td>
+            <td>Rs ${e.amount}</td>
+            <td>${e.use_type}</td>
+            <td>${e.where_spent}</td>
+            <td>${e.payment_method}</td>
+            <td><button onclick="deleteExpense(${e.id})">Delete</button></td>
+        </tr>`;
+            });
+        }
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            await fetch("/expenses/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    date: date.value,
+                    time: time.value,
+                    amount: amount.value,
+                    useType: useType.value,
+                    whereSpent: whereSpent.value,
+                    paymentMethod: paymentMethod.value
+                })
+            });
+
+            showMessage("Expense Added");
+            form.reset();
+            fetchExpenses();
+            loadInsights();
+        });
+
+        async function deleteExpense(id) {
+            await fetch(`/expenses/${id}/`, { method: "DELETE" });
+            showMessage("Deleted");
+            fetchExpenses();
+            loadInsights();
+        }
+
+        filter.addEventListener("change", fetchExpenses);
+
+        // insights
+        async function loadInsights() {
+            const res = await fetch("/insights/");
+            const data = await res.json();
+
+            document.getElementById("insightsBox").innerHTML = `
+        <h3>AI Insights</h3>
+        <p>Total: Rs ${data.total}</p>
+        <p>${data.insight}</p>
+    `;
+        }
+
+        // default date
+        document.getElementById("date").value = new Date().toISOString().split('T')[0];
+
+        fetchExpenses();
+        loadInsights();
+    </script>
+
+</body>
+
+</html>
