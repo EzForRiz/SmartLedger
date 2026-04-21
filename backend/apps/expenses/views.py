@@ -12,22 +12,36 @@ def home(request):
 
 @csrf_exempt
 def expenses_list(request):
+
+    # ✅ GET ALL EXPENSES
     if request.method == "GET":
         expenses = list(Expense.objects.values())
         return JsonResponse(expenses, safe=False)
 
+    # ✅ CREATE EXPENSE
     elif request.method == "POST":
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
 
-        Expense.objects.create(
-            amount=data.get("amount"),
-            category=data.get("category"),
-            payment_method=data.get("paymentMethod"),
-            where_spent=data.get("whereSpent"),
-            time=data.get("time") or None,
-        )
+            amount = float(data.get("amount"))
 
-        return JsonResponse({"message": "Expense added"}, status=201)
+            # ✅ VALIDATION
+            if amount <= 0:
+                return JsonResponse({"error": "Amount must be positive"}, status=400)
+
+            Expense.objects.create(
+                amount=amount,
+                category=data.get("category"),
+                payment_method=data.get("paymentMethod"),
+                where_spent=data.get("whereSpent"),
+                date=data.get("date"),
+                time=data.get("time") or None,
+            )
+
+            return JsonResponse({"message": "Expense added"}, status=201)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
 
 
 @csrf_exempt
@@ -37,6 +51,7 @@ def delete_expense(request, id):
         return JsonResponse({"message": "Deleted"})
 
 
+# ✅ INSIGHTS (still basic for now)
 def insights(request):
     expenses = Expense.objects.all()
 

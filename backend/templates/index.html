@@ -86,19 +86,28 @@
             setTimeout(() => messageDiv.textContent = "", 2000);
         }
 
+        // ✅ FETCH EXPENSES (FIXED ERROR HANDLING)
         async function fetchExpenses() {
-            const res = await fetch("/expenses/");
-            const data = await res.json();
+            try {
+                const res = await fetch("/expenses/");
+                if (!res.ok) throw new Error();
 
-            const selected = filter.value;
+                const data = await res.json();
 
-            const filtered = selected === "all"
-                ? data
-                : data.filter(e => e.category === selected);
+                const selected = filter.value;
 
-            render(filtered);
+                const filtered = selected === "all"
+                    ? data
+                    : data.filter(e => e.category === selected);
+
+                render(filtered);
+
+            } catch (err) {
+                showMessage("Failed to load expenses");
+            }
         }
 
+        // ✅ BETTER RENDER (NO innerHTML += LOOP)
         function render(expenses) {
             tableBody.innerHTML = "";
 
@@ -107,23 +116,28 @@
                 return;
             }
 
+            let rows = "";
+
             expenses.forEach(e => {
-                tableBody.innerHTML += `
-        <tr>
-            <td>${e.date}</td>
-            <td>${e.time || "-"}</td>
-            <td>Rs ${e.amount}</td>
-            <td>${e.category}</td>
-            <td>${e.where_spent}</td>
-            <td>${e.payment_method || "-"}</td>
-            <td>
-                <button onclick="deleteExpense(${e.id})">Delete</button>
-            </td>
-        </tr>
-        `;
+                rows += `
+                    <tr>
+                        <td>${e.date}</td>
+                        <td>${e.time || "-"}</td>
+                        <td>Rs ${e.amount}</td>
+                        <td>${e.category}</td>
+                        <td>${e.where_spent}</td>
+                        <td>${e.payment_method || "-"}</td>
+                        <td>
+                            <button onclick="deleteExpense(${e.id})">Delete</button>
+                        </td>
+                    </tr>
+                `;
             });
+
+            tableBody.innerHTML = rows;
         }
 
+        // ✅ FORM SUBMIT (ALREADY GOOD — JUST CLEANED)
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
 
@@ -143,47 +157,80 @@
                 paymentMethod: payment
             };
 
-            await fetch("/expenses/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            });
+            try {
+                const res = await fetch("/expenses/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
 
-            showMessage("Expense Added");
-            form.reset();
-            fetchExpenses();
-            loadInsights();
+                const result = await res.json();
+
+                if (!res.ok) {
+                    showMessage(result.error || "Error adding expense");
+                    return;
+                }
+
+                showMessage("Expense Added");
+                form.reset();
+
+                // reset date again after reset
+                document.getElementById("date").value =
+                    new Date().toISOString().split('T')[0];
+
+                fetchExpenses();
+                loadInsights();
+
+            } catch (err) {
+                showMessage("Server error");
+            }
         });
 
+        // ✅ DELETE (ALREADY GOOD — JUST SAFE)
         async function deleteExpense(id) {
-            const res = await fetch(`/expenses/${id}/`, {
-                method: "DELETE"
-            });
+            const confirmDelete = confirm("Are you sure you want to delete this expense?");
+            if (!confirmDelete) return;
 
-            if (res.ok) {
-                showMessage("Deleted");
-            } else {
-                showMessage("Delete failed");
+            try {
+                const res = await fetch(`/expenses/${id}/`, {
+                    method: "DELETE"
+                });
+
+                if (res.ok) {
+                    showMessage("Deleted");
+                } else {
+                    showMessage("Delete failed");
+                }
+
+                fetchExpenses();
+                loadInsights();
+
+            } catch (err) {
+                showMessage("Server error");
             }
-
-            fetchExpenses();
-            loadInsights();
         }
 
         filter.addEventListener("change", fetchExpenses);
 
+        // ✅ INSIGHTS (ADD ERROR HANDLING)
         async function loadInsights() {
-            const res = await fetch("/insights/");
-            const data = await res.json();
+            try {
+                const res = await fetch("/insights/");
+                if (!res.ok) throw new Error();
 
-            document.getElementById("insightsBox").innerHTML = `
-        <h3>AI Insights</h3>
-        <p>Total: Rs ${data.total}</p>
-        <p>${data.insight}</p>
-    `;
+                const data = await res.json();
+
+                document.getElementById("insightsBox").innerHTML = `
+                    <h3>AI Insights</h3>
+                    <p>Total: Rs ${data.total}</p>
+                    <p>${data.insight}</p>
+                `;
+            } catch (err) {
+                showMessage("Failed to load insights");
+            }
         }
 
-        // default date
+        // ✅ DEFAULT DATE
         document.getElementById("date").value =
             new Date().toISOString().split('T')[0];
 
