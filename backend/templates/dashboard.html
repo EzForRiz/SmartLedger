@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard — Smart Ledger{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <div class="page-header">
+        <div>
+            <h1>Dashboard</h1>
+            <p class="page-subtitle">Your spending overview at a glance</p>
+        </div>
+        <div id="dashDate" class="dash-date"></div>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="stats-container">
+        <div class="stat-card total-stat">
+            <div class="stat-label">💰 Total Spent</div>
+            <div class="stat-value" id="statTotal">—</div>
+            <div class="stat-sub" id="statCount">— expenses</div>
+        </div>
+        <div class="stat-card personal-stat">
+            <div class="stat-label">👤 Personal</div>
+            <div class="stat-value" id="statPersonal">—</div>
+            <div class="stat-sub" id="statPersonalPct">—% of total</div>
+        </div>
+        <div class="stat-card professional-stat">
+            <div class="stat-label">💼 Professional</div>
+            <div class="stat-value" id="statProfessional">—</div>
+            <div class="stat-sub" id="statProfessionalPct">—% of total</div>
+        </div>
+        <div class="stat-card month-stat">
+            <div class="stat-label">📅 This Month</div>
+            <div class="stat-value" id="statMonth">—</div>
+            <div class="stat-sub" id="statMonthCount">— expenses</div>
+        </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="charts-grid">
+
+        <!-- Doughnut -->
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h3>Spending Breakdown</h3>
+                <span class="chart-badge">All Time</span>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="doughnutChart"></canvas>
+                <div id="doughnutCenter" class="doughnut-center"></div>
+            </div>
+        </div>
+
+        <!-- Bar chart - monthly -->
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h3>Monthly Spending</h3>
+                <span class="chart-badge">Last 6 Months</span>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PAYMENT METHOD BREAKDOWN -->
+    <div class="chart-card" style="margin-bottom: 2rem;">
+        <div class="chart-card-header">
+            <h3>Payment Methods</h3>
+            <span class="chart-badge">All Time</span>
+        </div>
+        <div class="payment-breakdown" id="paymentBreakdown">
+            <!-- filled by JS -->
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ── DATE ──────────────────────────────────────────────────────
+    const now = new Date();
+    document.getElementById("dashDate").textContent = now.toLocaleDateString('en-PK', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    let doughnutChart, barChart;
+
+    // ── FETCH + RENDER ────────────────────────────────────────────
+    async function loadDashboard() {
+        try {
+            const res = await fetch("/expenses/");
+            if (!res.ok) throw new Error();
+            const expenses = await res.json();
+
+            renderStats(expenses);
+            renderDoughnut(expenses);
+            renderBar(expenses);
+            renderPaymentBreakdown(expenses);
+
+        } catch {
+            console.error("Dashboard load failed");
+        }
+    }
+
+    // ── STATS ─────────────────────────────────────────────────────
+    function renderStats(expenses) {
+        const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
+        const personal = expenses.filter(e => e.category === 'Personal').reduce((s, e) => s + Number(e.amount), 0);
+        const professional = expenses.filter(e => e.category === 'Professional').reduce((s, e) => s + Number(e.amount), 0);
+
+        const thisMonth = expenses.filter(e => {
+            const d = new Date(e.date);
+            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        });
+        const monthTotal = thisMonth.reduce((s, e) => s + Number(e.amount), 0);
+
+        document.getElementById("statTotal").textContent = `Rs ${total.toLocaleString()}`;
+        document.getElementById("statCount").textContent = `${expenses.length} expense${expenses.length !== 1 ? 's' : ''}`;
+        document.getElementById("statPersonal").textContent = `Rs ${personal.toLocaleString()}`;
+        document.getElementById("statPersonalPct").textContent = total ? `${Math.round((personal / total) * 100)}% of total` : '—';
+        document.getElementById("statProfessional").textContent = `Rs ${professional.toLocaleString()}`;
+        document.getElementById("statProfessionalPct").textContent = total ? `${Math.round((professional / total) * 100)}% of total` : '—';
+        document.getElementById("statMonth").textContent = `Rs ${monthTotal.toLocaleString()}`;
+        document.getElementById("statMonthCount").textContent = `${thisMonth.length} expense${thisMonth.length !== 1 ? 's' : ''}`;
+    }
+
+    // ── DOUGHNUT ──────────────────────────────────────────────────
+    function renderDoughnut(expenses) {
+        const personal = expenses.filter(e => e.category === 'Personal').reduce((s, e) => s + Number(e.amount), 0);
+        const professional = expenses.filter(e => e.category === 'Professional').reduce((s, e) => s + Number(e.amount), 0);
+        const total = personal + professional;
+
+        document.getElementById("doughnutCenter").innerHTML = `
+            <div class="dc-total">Rs ${total.toLocaleString()}</div>
+            <div class="dc-label">Total</div>
+        `;
+
+        const ctx = document.getElementById("doughnutChart").getContext("2d");
+        if (doughnutChart) doughnutChart.destroy();
+
+        doughnutChart = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: ["Personal", "Professional"],
+                datasets: [{
+                    data: [personal, professional],
+                    backgroundColor: ["#4da6ff", "#ff6b6b"],
+                    borderColor: ["#1a1a1a", "#1a1a1a"],
+                    borderWidth: 4,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#b0b0b0', padding: 20, font: { size: 13 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` Rs ${Number(ctx.raw).toLocaleString()}`
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // ── BAR CHART (last 6 months) ─────────────────────────────────
+    function renderBar(expenses) {
+        const months = [];
+        const labels = [];
+
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            months.push({ month: d.getMonth(), year: d.getFullYear() });
+            labels.push(d.toLocaleDateString('en-PK', { month: 'short', year: '2-digit' }));
+        }
+
+        const personalData = months.map(m =>
+            expenses.filter(e => {
+                const d = new Date(e.date);
+                return e.category === 'Personal' && d.getMonth() === m.month && d.getFullYear() === m.year;
+            }).reduce((s, e) => s + Number(e.amount), 0)
+        );
+
+        const professionalData = months.map(m =>
+            expenses.filter(e => {
+                const d = new Date(e.date);
+                return e.category === 'Professional' && d.getMonth() === m.month && d.getFullYear() === m.year;
+            }).reduce((s, e) => s + Number(e.amount), 0)
+        );
+
+        const ctx = document.getElementById("barChart").getContext("2d");
+        if (barChart) barChart.destroy();
+
+        barChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Personal',
+                        data: personalData,
+                        backgroundColor: 'rgba(77, 166, 255, 0.7)',
+                        borderColor: '#4da6ff',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                    },
+                    {
+                        label: 'Professional',
+                        data: professionalData,
+                        backgroundColor: 'rgba(255, 107, 107, 0.7)',
+                        borderColor: '#ff6b6b',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: { color: '#b0b0b0', font: { size: 13 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` Rs ${Number(ctx.raw).toLocaleString()}`
+                        }
+                    }
+                },
+                scales: {
+                    x: { ticks: { color: '#b0b0b0' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { ticks: { color: '#b0b0b0', callback: v => `Rs ${v}` }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                }
+            }
+        });
+    }
+
+    // ── PAYMENT BREAKDOWN ─────────────────────────────────────────
+    function renderPaymentBreakdown(expenses) {
+        const methods = { cash: '💵 Cash', card: '💳 Card', easypaisa: '📱 Easypaisa', jazzcash: '📱 JazzCash' };
+        const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
+
+        const breakdown = Object.entries(methods).map(([key, label]) => {
+            const amount = expenses.filter(e => e.payment_method === key).reduce((s, e) => s + Number(e.amount), 0);
+            const pct = total ? Math.round((amount / total) * 100) : 0;
+            return { label, amount, pct };
+        }).filter(b => b.amount > 0).sort((a, b) => b.amount - a.amount);
+
+        if (!breakdown.length) {
+            document.getElementById("paymentBreakdown").innerHTML = `<p class="chart-empty">No data yet</p>`;
+            return;
+        }
+
+        document.getElementById("paymentBreakdown").innerHTML = breakdown.map(b => `
+            <div class="payment-row">
+                <div class="payment-row-label">${b.label}</div>
+                <div class="payment-bar-wrap">
+                    <div class="payment-bar-fill" style="width: ${b.pct}%"></div>
+                </div>
+                <div class="payment-row-amount">Rs ${b.amount.toLocaleString()} <span class="payment-pct">${b.pct}%</span></div>
+            </div>
+        `).join('');
+    }
+
+    loadDashboard();
+</script>
+{% endblock %}

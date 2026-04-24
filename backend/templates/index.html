@@ -1,412 +1,340 @@
-{% load static %}
 <!-- index.html in templates folder of SmartLedger root folder -->
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Ledger</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
+{% extends "base.html" %}
+{% load static %}
 
-<body>
+{% block title %}Expenses — Smart Ledger{% endblock %}
+{% block nav_home %}active{% endblock %}
 
-    <div class="container">
+{% block content %}
+<div class="container">
 
-        <h1>💼 Smart Ledger</h1>
+    <h1>💼 Smart Ledger</h1>
 
-        <!-- ADD EXPENSE CARD -->
-        <div class="table-card" style="margin-bottom: 2rem;">
-            <div class="table-header">
-                <h2>Add Expense</h2>
-            </div>
-            <div style="padding: 1.5rem;">
-                <form id="expenseForm" class="form-grid">
-
-                    <div class="form-group">
-                        <label for="date">Date</label>
-                        <input type="date" id="date" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="time">Time (optional)</label>
-                        <input type="time" id="time">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="amount">Amount (Rs)</label>
-                        <input type="number" id="amount" placeholder="e.g. 500" required min="1" step="any">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="useType">Type</label>
-                        <select id="useType" required>
-                            <option value="">Select Type</option>
-                            <option value="Personal">Personal</option>
-                            <option value="Professional">Professional</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="whereSpent">Where Spent</label>
-                        <input type="text" id="whereSpent" placeholder="e.g. Grocery, Uber, Office" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="paymentMethod">Payment Method</label>
-                        <select id="paymentMethod" required>
-                            <option value="">Select Payment</option>
-                            <option value="cash">Cash</option>
-                            <option value="card">Card</option>
-                            <option value="easypaisa">Easypaisa</option>
-                            <option value="jazzcash">JazzCash</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group" style="align-self: flex-end;">
-                        <button type="submit" class="btn btn-submit" id="submitBtn">
-                            + Add Expense
-                        </button>
-                    </div>
-
-                </form>
-            </div>
+    <!-- ADD EXPENSE CARD -->
+    <div class="table-card" style="margin-bottom: 2rem;">
+        <div class="table-header">
+            <h2>Add Expense</h2>
         </div>
 
-        <!-- MESSAGE -->
-        <div id="message"></div>
+        <div style="padding: 1.5rem;">
+            <form id="expenseForm" class="form-grid">
 
-        <!-- STATS CARDS -->
-        <div class="stats-container" id="statsContainer">
-            <div class="stat-card total-stat">
-                <div class="stat-label">Total Spent</div>
-                <div class="stat-value" id="statTotal">Rs 0</div>
-            </div>
-            <div class="stat-card personal-stat">
-                <div class="stat-label">Personal</div>
-                <div class="stat-value" id="statPersonal">Rs 0</div>
-            </div>
-            <div class="stat-card professional-stat">
-                <div class="stat-label">Professional</div>
-                <div class="stat-value" id="statProfessional">Rs 0</div>
-            </div>
-        </div>
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" required>
+                </div>
 
-        <!-- INSIGHTS -->
-        <div id="insightsBox" class="insights-card"></div>
+                <div class="form-group">
+                    <label for="time">Time (optional)</label>
+                    <input type="time" id="time">
+                </div>
 
-        <!-- FILTERS + CHART ROW -->
-        <div class="filters-chart-row">
-            <div class="filters-panel">
-                <h3>Filters</h3>
-                <div class="filter-group">
-                    <label>Type</label>
-                    <select id="expenseTypeFilter">
-                        <option value="all">All</option>
+                <div class="form-group">
+                    <label for="amount">Amount (Rs)</label>
+                    <input type="number" id="amount" placeholder="e.g. 500" required min="1" step="any">
+                </div>
+
+                <div class="form-group">
+                    <label for="useType">Type</label>
+                    <select id="useType" required>
+                        <option value="">Select Type</option>
                         <option value="Personal">Personal</option>
                         <option value="Professional">Professional</option>
                     </select>
                 </div>
-                <div class="filter-group">
-                    <label>Period</label>
-                    <select id="timeFilter">
-                        <option value="all">All Time</option>
-                        <option value="today">Today</option>
-                        <option value="month">This Month</option>
+
+                <div class="form-group">
+                    <label for="whereSpent">Where Spent</label>
+                    <input type="text" id="whereSpent" placeholder="e.g. Grocery, Uber, Office" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="paymentMethod">Payment Method</label>
+                    <select id="paymentMethod" required>
+                        <option value="">Select Payment</option>
+                        <option value="cash">Cash</option>
+                        <option value="card">Card</option>
+                        <option value="easypaisa">Easypaisa</option>
+                        <option value="jazzcash">JazzCash</option>
                     </select>
                 </div>
+
+                <div class="form-group" style="align-self: flex-end;">
+                    <button type="submit" class="btn btn-submit" id="submitBtn">
+                        + Add Expense
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- MESSAGE -->
+    <div id="message"></div>
+
+    <!-- STATS -->
+    <div class="stats-container">
+        <div class="stat-card total-stat">
+            <div class="stat-label">Total Spent</div>
+            <div class="stat-value" id="statTotal">Rs 0</div>
+        </div>
+
+        <div class="stat-card personal-stat">
+            <div class="stat-label">Personal</div>
+            <div class="stat-value" id="statPersonal">Rs 0</div>
+        </div>
+
+        <div class="stat-card professional-stat">
+            <div class="stat-label">Professional</div>
+            <div class="stat-value" id="statProfessional">Rs 0</div>
+        </div>
+    </div>
+
+    <!-- INSIGHTS -->
+    <div id="insightsBox" class="insights-card"></div>
+
+    <!-- FILTERS + CHART -->
+    <div class="filters-chart-row">
+
+        <div class="filters-panel">
+            <h3>Filters</h3>
+
+            <div class="filter-group">
+                <label>Type</label>
+                <select id="expenseTypeFilter">
+                    <option value="all">All</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Professional">Professional</option>
+                </select>
             </div>
 
-            <div class="chart-panel">
-                <canvas id="expenseChart"></canvas>
-                <p id="chartEmpty" class="chart-empty" style="display:none;">No data to display</p>
+            <div class="filter-group">
+                <label>Period</label>
+                <select id="timeFilter">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="month">This Month</option>
+                </select>
             </div>
         </div>
 
-        <!-- TABLE -->
-        <div class="table-card">
-            <div class="table-header">
-                <h2>Expenses</h2>
-                <span id="expenseCount" class="expense-count"></span>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Amount</th>
-                            <th>Type</th>
-                            <th>Where</th>
-                            <th>Payment</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="expensesTableBody">
-                        <tr>
-                            <td colspan="7" class="loading-row">Loading...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="chart-panel">
+            <canvas id="expenseChart"></canvas>
+            <p id="chartEmpty" class="chart-empty" style="display:none;">No data to display</p>
         </div>
 
     </div>
 
-    <script>
-        const form = document.getElementById("expenseForm");
-        const tableBody = document.getElementById("expensesTableBody");
-        const typeFilter = document.getElementById("expenseTypeFilter");
-        const timeFilter = document.getElementById("timeFilter");
-        const messageDiv = document.getElementById("message");
-        const submitBtn = document.getElementById("submitBtn");
+    <!-- TABLE -->
+    <div class="table-card">
+        <div class="table-header">
+            <h2>Expenses</h2>
+            <span id="expenseCount"></span>
+        </div>
 
-        let chart;
-        let allExpenses = [];
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Where</th>
+                        <th>Payment</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
 
-        // ── MESSAGES ──────────────────────────────────────────────
-        function showMessage(msg, type = "success") {
-            messageDiv.className = `message message-${type}`;
-            messageDiv.textContent = msg;
-            clearTimeout(messageDiv._timer);
-            messageDiv._timer = setTimeout(() => {
-                messageDiv.textContent = "";
-                messageDiv.className = "";
-            }, 3000);
+                <tbody id="expensesTableBody">
+                    <tr>
+                        <td colspan="7">Loading...</td>
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const form = document.getElementById("expenseForm");
+    const tableBody = document.getElementById("expensesTableBody");
+    const typeFilter = document.getElementById("expenseTypeFilter");
+    const timeFilter = document.getElementById("timeFilter");
+    const messageDiv = document.getElementById("message");
+    const submitBtn = document.getElementById("submitBtn");
+
+    let chart;
+    let allExpenses = [];
+
+    // MESSAGE
+    function showMessage(msg, type = "success") {
+        messageDiv.className = `message message-${type}`;
+        messageDiv.textContent = msg;
+
+        setTimeout(() => {
+            messageDiv.textContent = "";
+            messageDiv.className = "";
+        }, 3000);
+    }
+
+    // FETCH
+    async function fetchExpenses() {
+        try {
+            const res = await fetch("/expenses/");
+            allExpenses = await res.json();
+            applyFilters();
+        } catch {
+            showMessage("Failed to load expenses", "error");
+        }
+    }
+
+    // FILTER
+    function applyFilters() {
+        let filtered = [...allExpenses];
+
+        const type = typeFilter.value;
+        const time = timeFilter.value;
+
+        const today = new Date().toISOString().split("T")[0];
+
+        if (type !== "all") {
+            filtered = filtered.filter(e => e.category === type);
         }
 
-        // ── FETCH ALL EXPENSES ────────────────────────────────────
-        async function fetchExpenses() {
-            try {
-                const res = await fetch("/expenses/");
-                if (!res.ok) throw new Error();
-                allExpenses = await res.json();
-                applyFiltersAndRender();
-            } catch {
-                showMessage("Failed to load expenses", "error");
-                tableBody.innerHTML = `<tr><td colspan="7" class="loading-row">Failed to load.</td></tr>`;
-            }
+        if (time === "today") {
+            filtered = filtered.filter(e => e.date === today);
         }
 
-        // ── FILTER + RENDER ───────────────────────────────────────
-        function applyFiltersAndRender() {
-            const selectedType = typeFilter.value;
-            const selectedTime = timeFilter.value;
-            const today = new Date();
-            const todayStr = today.toISOString().split("T")[0];
-
-            let filtered = [...allExpenses];
-
-            if (selectedType !== "all") {
-                filtered = filtered.filter(e => e.category === selectedType);
-            }
-
-            if (selectedTime === "today") {
-                filtered = filtered.filter(e => e.date === todayStr);
-            } else if (selectedTime === "month") {
-                filtered = filtered.filter(e => {
-                    const d = new Date(e.date);
-                    return d.getMonth() === today.getMonth() &&
-                        d.getFullYear() === today.getFullYear();
-                });
-            }
-
-            renderTable(filtered);
-            renderChart(filtered);
-            renderStats(filtered);
-        }
-
-        // ── TABLE ─────────────────────────────────────────────────
-        function renderTable(expenses) {
-            document.getElementById("expenseCount").textContent =
-                expenses.length ? `${expenses.length} record${expenses.length > 1 ? 's' : ''}` : '';
-
-            if (!expenses.length) {
-                tableBody.innerHTML = `<tr><td colspan="7" class="loading-row">No expenses found.</td></tr>`;
-                return;
-            }
-
-            tableBody.innerHTML = expenses.map(e => `
-                <tr>
-                    <td>${e.date}</td>
-                    <td>${e.time || "—"}</td>
-                    <td><strong>Rs ${Number(e.amount).toLocaleString()}</strong></td>
-                    <td>
-                        <span class="type-badge ${e.category === 'Personal' ? 'personal-badge' : 'professional-badge'}">
-                            ${e.category}
-                        </span>
-                    </td>
-                    <td>${e.where_spent}</td>
-                    <td class="payment-cell">${formatPayment(e.payment_method)}</td>
-                    <td>
-                        <button class="delete-btn" data-id="${e.id}">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function formatPayment(method) {
-            const map = { cash: '💵 Cash', card: '💳 Card', easypaisa: '📱 Easypaisa', jazzcash: '📱 JazzCash' };
-            return map[method] || method || '—';
-        }
-
-        // Event delegation for delete (no inline onclick)
-        tableBody.addEventListener('click', e => {
-            const btn = e.target.closest('.delete-btn');
-            if (btn) deleteExpense(btn.dataset.id);
-        });
-
-        // ── STATS CARDS ───────────────────────────────────────────
-        function renderStats(expenses) {
-            const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
-            const personal = expenses.filter(e => e.category === 'Personal').reduce((s, e) => s + Number(e.amount), 0);
-            const professional = expenses.filter(e => e.category === 'Professional').reduce((s, e) => s + Number(e.amount), 0);
-
-            document.getElementById("statTotal").textContent = `Rs ${total.toLocaleString()}`;
-            document.getElementById("statPersonal").textContent = `Rs ${personal.toLocaleString()}`;
-            document.getElementById("statProfessional").textContent = `Rs ${professional.toLocaleString()}`;
-        }
-
-        // ── CHART ─────────────────────────────────────────────────
-        function renderChart(expenses) {
-            const personal = expenses.filter(e => e.category === 'Personal').reduce((s, e) => s + Number(e.amount), 0);
-            const professional = expenses.filter(e => e.category === 'Professional').reduce((s, e) => s + Number(e.amount), 0);
-            const ctx = document.getElementById("expenseChart").getContext("2d");
-            const empty = document.getElementById("chartEmpty");
-
-            if (chart) chart.destroy();
-
-            if (personal === 0 && professional === 0) {
-                document.getElementById("expenseChart").style.display = 'none';
-                empty.style.display = 'block';
-                return;
-            }
-
-            document.getElementById("expenseChart").style.display = 'block';
-            empty.style.display = 'none';
-
-            chart = new Chart(ctx, {
-                type: "doughnut",
-                data: {
-                    labels: ["Personal", "Professional"],
-                    datasets: [{
-                        data: [personal, professional],
-                        backgroundColor: ["#4da6ff", "#ff6b6b"],
-                        borderColor: ["#1f1f1f", "#1f1f1f"],
-                        borderWidth: 3,
-                        hoverOffset: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { color: '#b0b0b0', padding: 16, font: { size: 13 } }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: ctx => ` Rs ${Number(ctx.raw).toLocaleString()}`
-                            }
-                        }
-                    },
-                    cutout: '60%'
-                }
+        if (time === "month") {
+            const now = new Date();
+            filtered = filtered.filter(e => {
+                const d = new Date(e.date);
+                return d.getMonth() === now.getMonth() &&
+                    d.getFullYear() === now.getFullYear();
             });
         }
 
-        // ── ADD EXPENSE ───────────────────────────────────────────
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Adding...";
+        renderTable(filtered);
+        renderStats(filtered);
+        renderChart(filtered);
+    }
 
-            const data = {
-                date: document.getElementById("date").value,
-                time: document.getElementById("time").value || null,
-                amount: document.getElementById("amount").value,
-                category: document.getElementById("useType").value,
-                whereSpent: document.getElementById("whereSpent").value,
-                paymentMethod: document.getElementById("paymentMethod").value,
-            };
+    // TABLE
+    function renderTable(expenses) {
+        document.getElementById("expenseCount").textContent =
+            expenses.length ? `${expenses.length} items` : "";
 
-            try {
-                const res = await fetch("/expenses/", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data)
-                });
+        if (!expenses.length) {
+            tableBody.innerHTML = `<tr><td colspan="7">No expenses found</td></tr>`;
+            return;
+        }
 
-                const result = await res.json();
+        tableBody.innerHTML = expenses.map(e => `
+        <tr>
+            <td>${e.date}</td>
+            <td>${e.time || "—"}</td>
+            <td><strong>Rs ${Number(e.amount).toLocaleString()}</strong></td>
+            <td>${e.category}</td>
+            <td>${e.where_spent}</td>
+            <td>${e.payment_method}</td>
+            <td><button class="delete-btn" data-id="${e.id}">Delete</button></td>
+        </tr>
+    `).join('');
+    }
 
-                if (!res.ok) {
-                    showMessage(result.error || "Something went wrong", "error");
-                    return;
-                }
+    // STATS
+    function renderStats(expenses) {
+        const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
+        const personal = expenses.filter(e => e.category === "Personal")
+            .reduce((s, e) => s + Number(e.amount), 0);
+        const professional = expenses.filter(e => e.category === "Professional")
+            .reduce((s, e) => s + Number(e.amount), 0);
 
-                showMessage("✅ Expense added successfully!");
-                form.reset();
-                document.getElementById("date").value = new Date().toISOString().split('T')[0];
-                fetchExpenses();
-                loadInsights();
+        document.getElementById("statTotal").textContent = `Rs ${total}`;
+        document.getElementById("statPersonal").textContent = `Rs ${personal}`;
+        document.getElementById("statProfessional").textContent = `Rs ${professional}`;
+    }
 
-            } catch {
-                showMessage("Server error. Try again.", "error");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "+ Add Expense";
+    // CHART
+    function renderChart(expenses) {
+        const personal = expenses.filter(e => e.category === "Personal")
+            .reduce((s, e) => s + Number(e.amount), 0);
+
+        const professional = expenses.filter(e => e.category === "Professional")
+            .reduce((s, e) => s + Number(e.amount), 0);
+
+        const ctx = document.getElementById("expenseChart").getContext("2d");
+
+        if (chart) chart.destroy();
+
+        chart = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: ["Personal", "Professional"],
+                datasets: [{
+                    data: [personal, professional]
+                }]
             }
         });
+    }
 
-        // ── DELETE ────────────────────────────────────────────────
-        async function deleteExpense(id) {
-            if (!confirm("Delete this expense?")) return;
+    // ADD
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-            try {
-                const res = await fetch(`/expenses/${id}/`, { method: "DELETE" });
-                if (res.ok) {
-                    showMessage("🗑️ Expense deleted");
-                    fetchExpenses();
-                    loadInsights();
-                } else {
-                    showMessage("Delete failed", "error");
-                }
-            } catch {
-                showMessage("Server error", "error");
-            }
+        submitBtn.disabled = true;
+
+        const data = {
+            date: date.value,
+            time: time.value || null,
+            amount: amount.value,
+            category: useType.value,
+            where_spent: whereSpent.value,
+            payment_method: paymentMethod.value
+        };
+
+        try {
+            const res = await fetch("/expenses/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (!res.ok) throw new Error();
+
+            showMessage("Expense added!");
+            form.reset();
+            fetchExpenses();
+
+        } catch {
+            showMessage("Error adding expense", "error");
         }
 
-        // ── INSIGHTS ──────────────────────────────────────────────
-        async function loadInsights() {
-            try {
-                const res = await fetch("/insights/");
-                const data = await res.json();
-                document.getElementById("insightsBox").innerHTML = `
-                    <div class="insights-inner">
-                        <span class="insights-icon">🤖</span>
-                        <div>
-                            <strong>AI Insight</strong>
-                            <p>${data.insight}</p>
-                        </div>
-                    </div>
-                `;
-            } catch {
-                // Fail silently — insights are non-critical
-            }
-        }
+        submitBtn.disabled = false;
+    });
 
-        // ── FILTERS ───────────────────────────────────────────────
-        typeFilter.addEventListener("change", applyFiltersAndRender);
-        timeFilter.addEventListener("change", applyFiltersAndRender);
+    // DELETE
+    tableBody.addEventListener("click", async (e) => {
+        if (!e.target.classList.contains("delete-btn")) return;
 
-        // ── INIT ──────────────────────────────────────────────────
-        document.getElementById("date").value = new Date().toISOString().split('T')[0];
+        const id = e.target.dataset.id;
+
+        await fetch(`/expenses/${id}/`, { method: "DELETE" });
         fetchExpenses();
-        loadInsights();
-    </script>
+    });
 
-</body>
+    // FILTER EVENTS
+    typeFilter.addEventListener("change", applyFilters);
+    timeFilter.addEventListener("change", applyFilters);
 
-</html>
+    // INIT
+    document.getElementById("date").value = new Date().toISOString().split("T")[0];
+    fetchExpenses();
+</script>
+{% endblock %}

@@ -608,3 +608,388 @@ tfoot td {
     }
 }
 
+/* ===== NAVBAR ===== */
+.navbar {
+    background: var(--secondary-bg);
+    border-bottom: 1px solid var(--border-primary);
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.4rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+}
+
+.nav-list {
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+}
+
+.nav-item a {
+    display: block;
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-medium);
+    transition: background 0.2s, color 0.2s;
+    border: 1px solid transparent;
+}
+
+.nav-item a:hover {
+    background: var(--tertiary-bg);
+    color: var(--text-primary);
+    border-color: var(--border-primary);
+}
+
+.nav-item a.active {
+    background: var(--tertiary-bg);
+    color: var(--text-primary);
+    border-color: var(--border-primary);
+}
+
+.main-content {
+    flex: 1;
+}
+
+/* ===== PAGE HEADER ===== */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-top: 1rem;
+}
+
+.page-subtitle {
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+}
+
+.dash-date {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+/* ===== STAT SUB TEXT ===== */
+.stat-sub {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.month-stat {
+    border-top: 4px solid #a78bfa;
+}
+
+/* ===== CHARTS GRID ===== */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.chart-card {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.chart-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.chart-card-header h3 {
+    font-size: 1rem;
+    font-weight: var(--font-weight-medium);
+    margin: 0;
+}
+
+.chart-badge {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background: var(--tertiary-bg);
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    border: 1px solid var(--border-primary);
+}
+
+.chart-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.doughnut-center {
+    position: absolute;
+    text-align: center;
+    pointer-events: none;
+}
+
+.dc-total {
+    font-size: 1.1rem;
+    font-weight: var(--font-weight-bold);
+}
+
+.dc-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* ===== PAYMENT BREAKDOWN ===== */
+.payment-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem 0;
+}
+
+.payment-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 160px;
+    align-items: center;
+    gap: 1rem;
+}
+
+.payment-row-label {
+    font-size: 0.9rem;
+}
+
+.payment-bar-wrap {
+    background: var(--tertiary-bg);
+    border-radius: 20px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.payment-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4da6ff, #a78bfa);
+    border-radius: 20px;
+    transition: width 0.6s ease;
+}
+
+.payment-row-amount {
+    font-size: 0.9rem;
+    text-align: right;
+}
+
+.payment-pct {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-left: 0.4rem;
+}
+
+/* ===== ROSCA PAGE ===== */
+.rosca-hero {
+    text-align: center;
+    padding: 4rem 2rem 3rem;
+}
+
+.rosca-badge {
+    display: inline-block;
+    background: rgba(167, 139, 250, 0.15);
+    color: #a78bfa;
+    border: 1px solid #a78bfa;
+    padding: 0.4rem 1.2rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+}
+
+.rosca-title {
+    font-size: 3rem;
+    font-weight: var(--font-weight-bold);
+    margin-bottom: 1rem;
+    letter-spacing: -0.04em;
+}
+
+.rosca-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    max-width: 520px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+}
+
+/* Countdown */
+.countdown-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.countdown-block {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    min-width: 80px;
+    text-align: center;
+}
+
+.countdown-val {
+    font-size: 2.25rem;
+    font-weight: var(--font-weight-bold);
+    font-variant-numeric: tabular-nums;
+    color: #a78bfa;
+}
+
+.countdown-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.25rem;
+}
+
+.countdown-sep {
+    font-size: 2rem;
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: 1rem;
+}
+
+.countdown-caption {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.launched-badge {
+    font-size: 1.5rem;
+    padding: 1rem 2rem;
+    background: rgba(67, 160, 71, 0.15);
+    border: 1px solid var(--success);
+    color: var(--success);
+    border-radius: 12px;
+}
+
+/* Feature Cards */
+.features-heading {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-medium);
+}
+
+.rosca-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 3rem;
+}
+
+.rosca-feature-card {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    padding: 1.75rem;
+    transition: border-color 0.25s, transform 0.2s;
+}
+
+.rosca-feature-card:hover {
+    border-color: #a78bfa;
+    transform: translateY(-4px);
+}
+
+.feature-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.rosca-feature-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: var(--font-weight-medium);
+}
+
+.rosca-feature-card p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.feature-status {
+    display: inline-block;
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.feature-status.planned {
+    background: rgba(77, 166, 255, 0.1);
+    color: var(--personal-color);
+    border: 1px solid var(--personal-color);
+}
+
+.feature-status.future {
+    background: rgba(167, 139, 250, 0.1);
+    color: #a78bfa;
+    border: 1px solid #a78bfa;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-row {
+        grid-template-columns: 110px 1fr 120px;
+    }
+
+    .rosca-title {
+        font-size: 2rem;
+    }
+
+    .countdown-block {
+        padding: 0.75rem 1rem;
+        min-width: 60px;
+    }
+
+    .countdown-val {
+        font-size: 1.75rem;
+    }
+
+    .navbar-inner {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+}

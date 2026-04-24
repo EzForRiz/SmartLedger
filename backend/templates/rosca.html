@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ROSCA — Smart Ledger{% endblock %}
+{% block nav_rosca %}active{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <!-- HERO -->
+    <div class="rosca-hero">
+        <div class="rosca-badge">🚧 Coming Soon</div>
+        <h1 class="rosca-title">ROSCA Module</h1>
+        <p class="rosca-subtitle">
+            Rotating Savings & Credit Association — a digital committee system for groups who save together.
+        </p>
+
+        <!-- COUNTDOWN -->
+        <div class="countdown-wrap">
+            <div class="countdown-block">
+                <div class="countdown-val" id="cdDays">00</div>
+                <div class="countdown-label">Days</div>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-block">
+                <div class="countdown-val" id="cdHours">00</div>
+                <div class="countdown-label">Hours</div>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-block">
+                <div class="countdown-val" id="cdMins">00</div>
+                <div class="countdown-label">Minutes</div>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-block">
+                <div class="countdown-val" id="cdSecs">00</div>
+                <div class="countdown-label">Seconds</div>
+            </div>
+        </div>
+        <p class="countdown-caption">Estimated launch: June 1, 2025</p>
+    </div>
+
+    <!-- FEATURE CARDS -->
+    <h2 class="features-heading">What's Coming</h2>
+
+    <div class="rosca-features-grid">
+
+        <div class="rosca-feature-card">
+            <div class="feature-icon">👥</div>
+            <h3>Create Committees</h3>
+            <p>Form groups with friends, family, or colleagues. Set contribution amounts and cycle durations.</p>
+            <div class="feature-status planned">Planned</div>
+        </div>
+
+        <div class="rosca-feature-card">
+            <div class="feature-icon">🔄</div>
+            <h3>Auto Rotation</h3>
+            <p>Automatic payout rotation so every member receives the pot fairly, tracked transparently.</p>
+            <div class="feature-status planned">Planned</div>
+        </div>
+
+        <div class="rosca-feature-card">
+            <div class="feature-icon">📲</div>
+            <h3>Payment Tracking</h3>
+            <p>Track who has paid, who hasn't, and send reminders — all within the app.</p>
+            <div class="feature-status planned">Planned</div>
+        </div>
+
+        <div class="rosca-feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Committee Analytics</h3>
+            <p>See contribution history, upcoming payouts, and member activity in one dashboard.</p>
+            <div class="feature-status planned">Planned</div>
+        </div>
+
+        <div class="rosca-feature-card">
+            <div class="feature-icon">🔐</div>
+            <h3>Role-Based Access</h3>
+            <p>Committee admins manage members and settings. Members view their own contribution history.</p>
+            <div class="feature-status planned">Planned</div>
+        </div>
+
+        <div class="rosca-feature-card">
+            <div class="feature-icon">🤖</div>
+            <h3>AI Risk Scoring</h3>
+            <p>Smart AI flags members with irregular payment history to protect the group's funds.</p>
+            <div class="feature-status future">Future</div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Countdown to June 1, 2025
+    const target = new Date("2025-06-01T00:00:00").getTime();
+
+    function updateCountdown() {
+        const now = Date.now();
+        const diff = target - now;
+
+        if (diff <= 0) {
+            document.querySelector(".countdown-wrap").innerHTML = `<div class="launched-badge">🎉 Launched!</div>`;
+            return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        document.getElementById("cdDays").textContent = String(days).padStart(2, '0');
+        document.getElementById("cdHours").textContent = String(hours).padStart(2, '0');
+        document.getElementById("cdMins").textContent = String(mins).padStart(2, '0');
+        document.getElementById("cdSecs").textContent = String(secs).padStart(2, '0');
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+</script>
+{% endblock %}
