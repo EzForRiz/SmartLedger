@@ -1,3 +1,5 @@
+# urls.py in expenses folder which is in apps folder
+
 from django.urls import path
 from . import views
 

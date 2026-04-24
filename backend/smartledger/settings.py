@@ -1,3 +1,5 @@
+# settings.py in smartledger folder. note: root folder is SmartLedger which contains all folders such as apps folder, expenses folder, static folder, templates folder etc.
+
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
