@@ -1,3 +1,5 @@
+<!-- templates/dashboard.html -->
+
 {% extends "base.html" %}
 {% load static %}
 
@@ -36,6 +38,14 @@
             <div class="stat-label">📅 This Month</div>
             <div class="stat-value" id="statMonth">—</div>
             <div class="stat-sub" id="statMonthCount">— expenses</div>
+        </div>
+    </div>
+
+    <!-- AI INSIGHTS -->
+    <div class="ai-insights-card" id="aiInsightsCard">
+        <div class="ai-insights-loading">
+            <div class="ai-spinner"></div>
+            <span>Generating AI insights...</span>
         </div>
     </div>
 
@@ -91,22 +101,6 @@
 
     let doughnutChart, barChart;
 
-    // ── FETCH + RENDER ────────────────────────────────────────────
-    async function loadDashboard() {
-        try {
-            const res = await fetch("/expenses/");
-            if (!res.ok) throw new Error();
-            const expenses = await res.json();
-
-            renderStats(expenses);
-            renderDoughnut(expenses);
-            renderBar(expenses);
-            renderPaymentBreakdown(expenses);
-
-        } catch {
-            console.error("Dashboard load failed");
-        }
-    }
 
     // ── STATS ─────────────────────────────────────────────────────
     function renderStats(expenses) {
@@ -245,6 +239,7 @@
         });
     }
 
+
     // ── PAYMENT BREAKDOWN ─────────────────────────────────────────
     function renderPaymentBreakdown(expenses) {
         const methods = { cash: '💵 Cash', card: '💳 Card', easypaisa: '📱 Easypaisa', jazzcash: '📱 JazzCash' };
@@ -271,7 +266,54 @@
             </div>
         `).join('');
     }
+    async function loadInsights() {
+            const card = document.getElementById("aiInsightsCard");
+            try {
+                const res = await fetch("/insights/");
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+
+                card.innerHTML = `
+            <div class="ai-insights-inner">
+                <div class="ai-insights-header">
+                    <span class="ai-badge">🤖 Llama 3 · Powered by Groq</span>
+                </div>
+                <div class="ai-insights-body">
+                    <div class="ai-section">
+                        <div class="ai-section-label">📊 Monthly Summary</div>
+                        <p>${data.summary}</p>
+                    </div>
+                    ${data.forecast ? `
+                    <div class="ai-section">
+                        <div class="ai-section-label">🔮 Forecast</div>
+                        <p>${data.forecast}</p>
+                    </div>` : ''}
+                </div>
+            </div>
+        `;
+            } catch {
+                card.innerHTML = `<div class="ai-insights-inner"><p class="ai-error">⚠️ Could not load AI insights.</p></div>`;
+            }
+        }
+
+    async function loadDashboard() {
+            try {
+                const res = await fetch("/expenses/");
+                if (!res.ok) throw new Error();
+                const expenses = await res.json();
+
+                renderStats(expenses);
+                renderDoughnut(expenses);
+                renderBar(expenses);
+                renderPaymentBreakdown(expenses);
+            } catch {
+                console.error("Dashboard load failed");
+            }
+
+            loadInsights(); // runs independently
+        }
 
     loadDashboard();
+    
 </script>
 {% endblock %}

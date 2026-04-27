@@ -1,9 +1,10 @@
+# apps/expenses/views.py
+
 import json
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from django.db.models import Sum
 from .models import Expense
 
 
@@ -41,11 +42,11 @@ def expenses_list(request):
             if category not in ("Personal", "Professional"):
                 return JsonResponse({"error": "Invalid category"}, status=400)
 
-            payment_method = data.get("payment_method")
+            payment_method = data.get("paymentMethod")
             if payment_method not in ("cash", "card", "easypaisa", "jazzcash"):
                 return JsonResponse({"error": "Invalid payment method"}, status=400)
 
-            where_spent = (data.get("where_spent") or "").strip()
+            where_spent = (data.get("whereSpent") or "").strip()
             if not where_spent:
                 return JsonResponse({"error": "Where spent is required"}, status=400)
 
@@ -86,26 +87,14 @@ def delete_expense(request, id):
 
 
 # ───────────────── INSIGHTS ─────────────────
+from apps.ai_insights.services import generate_insights
+
 def insights(request):
     expenses = Expense.objects.all()
 
-    total = expenses.aggregate(Sum("amount"))["amount__sum"] or 0
-    personal = expenses.filter(category="Personal").aggregate(Sum("amount"))["amount__sum"] or 0
-    professional = expenses.filter(category="Professional").aggregate(Sum("amount"))["amount__sum"] or 0
+    data = generate_insights(expenses)
 
-    if total == 0:
-        insight = "No expenses recorded yet."
-    elif personal > professional:
-        insight = f"Personal spending is higher ({round(personal/total*100)}%)."
-    else:
-        insight = f"Professional spending is higher ({round(professional/total*100)}%)."
-
-    return JsonResponse({
-        "total": round(total, 2),
-        "personal": round(personal, 2),
-        "professional": round(professional, 2),
-        "insight": insight
-    })
+    return JsonResponse(data)
 
 
 def dashboard(request):
