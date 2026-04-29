@@ -8,6 +8,6 @@ urlpatterns = [
     path('dashboard/', views.dashboard),
     path('rosca/', views.rosca),
     path('expenses/', views.expenses_list),
-    path('expenses/<int:id>/', views.delete_expense),
+    path('expenses/<int:id>/', views.expense_detail), 
     path('insights/', views.insights),
 ]

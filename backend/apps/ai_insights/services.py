@@ -1,3 +1,6 @@
+# backend/apps/ai_insights/services.py
+
+
 from django.conf import settings
 from groq import Groq
 from django.db.models import Sum
@@ -11,15 +14,15 @@ def generate_insights(expenses):
     client = Groq(api_key=settings.GROQ_API_KEY)
 
     # ── STATS ─────────────────────────────────────────────────────
-    total = expenses.aggregate(Sum("amount"))["amount__sum"] or 0
-    personal = expenses.filter(category="Personal").aggregate(Sum("amount"))["amount__sum"] or 0
-    professional = expenses.filter(category="Professional").aggregate(Sum("amount"))["amount__sum"] or 0
+    total = float(expenses.aggregate(Sum("amount"))["amount__sum"] or 0)
+    personal = float(expenses.filter(category="Personal").aggregate(Sum("amount"))["amount__sum"] or 0)
+    professional = float(expenses.filter(category="Professional").aggregate(Sum("amount"))["amount__sum"] or 0)
 
     # Monthly breakdown
     monthly = defaultdict(float)
     for e in expenses:
         key = e.date.strftime("%B %Y")
-        monthly[key] += e.amount
+        monthly[key] += float(e.amount)
 
     monthly_str = "\n".join(
         f"  - {month}: Rs {amount:,.0f}"
@@ -29,7 +32,7 @@ def generate_insights(expenses):
     # Top locations
     locations = defaultdict(float)
     for e in expenses:
-        locations[e.where_spent] += e.amount
+        locations[e.where_spent] += float(e.amount)
 
     top_locations = sorted(locations.items(), key=lambda x: x[1], reverse=True)[:3]
     locations_str = ", ".join(

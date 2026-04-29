@@ -16,25 +16,20 @@
         <div class="table-header">
             <h2>Add Expense</h2>
         </div>
-
         <div style="padding: 1.5rem;">
             <form id="expenseForm" class="form-grid">
-
                 <div class="form-group">
                     <label for="date">Date</label>
                     <input type="date" id="date" required>
                 </div>
-
                 <div class="form-group">
                     <label for="time">Time (optional)</label>
                     <input type="time" id="time">
                 </div>
-
                 <div class="form-group">
                     <label for="amount">Amount (Rs)</label>
                     <input type="number" id="amount" placeholder="e.g. 500" required min="1" step="any">
                 </div>
-
                 <div class="form-group">
                     <label for="useType">Type</label>
                     <select id="useType" required>
@@ -43,12 +38,10 @@
                         <option value="Professional">Professional</option>
                     </select>
                 </div>
-
                 <div class="form-group">
                     <label for="whereSpent">Where Spent</label>
                     <input type="text" id="whereSpent" placeholder="e.g. Grocery, Uber, Office" required>
                 </div>
-
                 <div class="form-group">
                     <label for="paymentMethod">Payment Method</label>
                     <select id="paymentMethod" required>
@@ -59,13 +52,11 @@
                         <option value="jazzcash">JazzCash</option>
                     </select>
                 </div>
-
                 <div class="form-group" style="align-self: flex-end;">
                     <button type="submit" class="btn btn-submit" id="submitBtn">
                         + Add Expense
                     </button>
                 </div>
-
             </form>
         </div>
     </div>
@@ -73,18 +64,24 @@
     <!-- MESSAGE -->
     <div id="message"></div>
 
+    <!-- SEARCH BAR -->
+    <div class="search-bar-wrap">
+        <div class="search-icon">🔍</div>
+        <input type="text" id="searchInput" class="search-bar"
+            placeholder="Search by location e.g. Grocery, Uber, Office...">
+        <button class="search-clear" id="searchClear" style="display:none;">✕</button>
+    </div>
+
     <!-- STATS -->
     <div class="stats-container">
         <div class="stat-card total-stat">
             <div class="stat-label">Total Spent</div>
             <div class="stat-value" id="statTotal">Rs 0</div>
         </div>
-
         <div class="stat-card personal-stat">
             <div class="stat-label">Personal</div>
             <div class="stat-value" id="statPersonal">Rs 0</div>
         </div>
-
         <div class="stat-card professional-stat">
             <div class="stat-label">Professional</div>
             <div class="stat-value" id="statProfessional">Rs 0</div>
@@ -103,7 +100,7 @@
             <div class="filter-group">
                 <label>Type</label>
                 <select id="expenseTypeFilter">
-                    <option value="all">All</option>
+                    <option value="all">All Types</option>
                     <option value="Personal">Personal</option>
                     <option value="Professional">Professional</option>
                 </select>
@@ -117,6 +114,45 @@
                     <option value="month">This Month</option>
                 </select>
             </div>
+
+            <div class="filter-group">
+                <label>Payment</label>
+                <select id="paymentFilter">
+                    <option value="all">All Methods</option>
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                    <option value="easypaisa">Easypaisa</option>
+                    <option value="jazzcash">JazzCash</option>
+                </select>
+            </div>
+
+            <div class="filter-divider"></div>
+
+            <div class="filter-group">
+                <label>From Date</label>
+                <input type="date" id="dateFrom">
+            </div>
+
+            <div class="filter-group">
+                <label>To Date</label>
+                <input type="date" id="dateTo">
+            </div>
+
+            <div class="filter-divider"></div>
+
+            <div class="filter-group">
+                <label>Min Amount (Rs)</label>
+                <input type="number" id="amountMin" placeholder="0" min="0">
+            </div>
+
+            <div class="filter-group">
+                <label>Max Amount (Rs)</label>
+                <input type="number" id="amountMax" placeholder="Any" min="0">
+            </div>
+
+            <button class="btn clear-filters-btn" id="clearFiltersBtn">
+                🗑️ Clear All Filters
+            </button>
         </div>
 
         <div class="chart-panel">
@@ -130,9 +166,8 @@
     <div class="table-card">
         <div class="table-header">
             <h2>Expenses</h2>
-            <span id="expenseCount"></span>
+            <span id="expenseCount" class="expense-count"></span>
         </div>
-
         <div class="table-container">
             <table>
                 <thead>
@@ -146,14 +181,60 @@
                         <th>Action</th>
                     </tr>
                 </thead>
-
                 <tbody id="expensesTableBody">
                     <tr>
-                        <td colspan="7">Loading...</td>
+                        <td colspan="7" class="loading-row">Loading...</td>
                     </tr>
                 </tbody>
-
             </table>
+        </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div id="editModal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Edit Expense</h3>
+                <button class="modal-close" id="modalClose">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="editDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Time (optional)</label>
+                    <input type="time" id="editTime">
+                </div>
+                <div class="form-group">
+                    <label>Amount (Rs)</label>
+                    <input type="number" id="editAmount" required min="1" step="any">
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="editCategory">
+                        <option value="Personal">Personal</option>
+                        <option value="Professional">Professional</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Where Spent</label>
+                    <input type="text" id="editWhereSpent" required>
+                </div>
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select id="editPaymentMethod">
+                        <option value="cash">Cash</option>
+                        <option value="card">Card</option>
+                        <option value="easypaisa">Easypaisa</option>
+                        <option value="jazzcash">JazzCash</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="modalCancelBtn">Cancel</button>
+                <button class="btn btn-submit" id="modalSaveBtn">Save Changes</button>
+            </div>
         </div>
     </div>
 
@@ -166,24 +247,33 @@
     const tableBody = document.getElementById("expensesTableBody");
     const typeFilter = document.getElementById("expenseTypeFilter");
     const timeFilter = document.getElementById("timeFilter");
+    const paymentFilter = document.getElementById("paymentFilter");
+    const dateFrom = document.getElementById("dateFrom");
+    const dateTo = document.getElementById("dateTo");
+    const amountMin = document.getElementById("amountMin");
+    const amountMax = document.getElementById("amountMax");
+    const searchInput = document.getElementById("searchInput");
+    const searchClear = document.getElementById("searchClear");
     const messageDiv = document.getElementById("message");
     const submitBtn = document.getElementById("submitBtn");
+    const editModal = document.getElementById("editModal");
 
     let chart;
     let allExpenses = [];
+    let currentEditId = null;
 
-    // MESSAGE
+    // ── MESSAGE ───────────────────────────────────────────────────
     function showMessage(msg, type = "success") {
         messageDiv.className = `message message-${type}`;
         messageDiv.textContent = msg;
-
-        setTimeout(() => {
+        clearTimeout(messageDiv._timer);
+        messageDiv._timer = setTimeout(() => {
             messageDiv.textContent = "";
             messageDiv.className = "";
         }, 3000);
     }
 
-    // FETCH
+    // ── FETCH ─────────────────────────────────────────────────────
     async function fetchExpenses() {
         try {
             const res = await fetch("/expenses/");
@@ -194,24 +284,29 @@
         }
     }
 
-    // FILTER
+    // ── FILTER ────────────────────────────────────────────────────
     function applyFilters() {
         let filtered = [...allExpenses];
 
         const type = typeFilter.value;
         const time = timeFilter.value;
-
+        const payment = paymentFilter.value;
+        const search = searchInput.value.trim().toLowerCase();
+        const from = dateFrom.value;
+        const to = dateTo.value;
+        const min = parseFloat(amountMin.value);
+        const max = parseFloat(amountMax.value);
         const today = new Date().toISOString().split("T")[0];
 
+        // Type filter
         if (type !== "all") {
             filtered = filtered.filter(e => e.category === type);
         }
 
+        // Period filter
         if (time === "today") {
             filtered = filtered.filter(e => e.date === today);
-        }
-
-        if (time === "month") {
+        } else if (time === "month") {
             const now = new Date();
             filtered = filtered.filter(e => {
                 const d = new Date(e.date);
@@ -220,35 +315,99 @@
             });
         }
 
+        // Payment filter
+        if (payment !== "all") {
+            filtered = filtered.filter(e => e.payment_method === payment);
+        }
+
+        // Search filter
+        if (search) {
+            filtered = filtered.filter(e =>
+                e.where_spent.toLowerCase().includes(search)
+            );
+        }
+
+        // Date range filter
+        if (from) {
+            filtered = filtered.filter(e => e.date >= from);
+        }
+        if (to) {
+            filtered = filtered.filter(e => e.date <= to);
+        }
+
+        // Amount range filter
+        if (!isNaN(min) && min > 0) {
+            filtered = filtered.filter(e => Number(e.amount) >= min);
+        }
+        if (!isNaN(max) && max > 0) {
+            filtered = filtered.filter(e => Number(e.amount) <= max);
+        }
+
+        // Show/hide search clear button
+        searchClear.style.display = search ? "block" : "none";
+
         renderTable(filtered);
         renderStats(filtered);
         renderChart(filtered);
     }
 
-    // TABLE
+    // ── CLEAR FILTERS ─────────────────────────────────────────────
+    document.getElementById("clearFiltersBtn").addEventListener("click", () => {
+        typeFilter.value = "all";
+        timeFilter.value = "all";
+        paymentFilter.value = "all";
+        searchInput.value = "";
+        dateFrom.value = "";
+        dateTo.value = "";
+        amountMin.value = "";
+        amountMax.value = "";
+        searchClear.style.display = "none";
+        applyFilters();
+    });
+
+    // Search clear button
+    searchClear.addEventListener("click", () => {
+        searchInput.value = "";
+        searchClear.style.display = "none";
+        applyFilters();
+    });
+
+    // ── TABLE ─────────────────────────────────────────────────────
     function renderTable(expenses) {
         document.getElementById("expenseCount").textContent =
-            expenses.length ? `${expenses.length} items` : "";
+            expenses.length ? `${expenses.length} item${expenses.length !== 1 ? 's' : ''}` : "";
 
         if (!expenses.length) {
-            tableBody.innerHTML = `<tr><td colspan="7">No expenses found</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="7" class="loading-row">No expenses found</td></tr>`;
             return;
         }
 
         tableBody.innerHTML = expenses.map(e => `
-        <tr>
-            <td>${e.date}</td>
-            <td>${e.time || "—"}</td>
-            <td><strong>Rs ${Number(e.amount).toLocaleString()}</strong></td>
-            <td>${e.category}</td>
-            <td>${e.where_spent}</td>
-            <td>${e.payment_method}</td>
-            <td><button class="delete-btn" data-id="${e.id}">Delete</button></td>
-        </tr>
-    `).join('');
+            <tr>
+                <td>${e.date}</td>
+                <td>${e.time || "—"}</td>
+                <td><strong>Rs ${Number(e.amount).toLocaleString()}</strong></td>
+                <td>
+                    <span class="type-badge ${e.category === 'Personal' ? 'personal-badge' : 'professional-badge'}">
+                        ${e.category}
+                    </span>
+                </td>
+                <td>${e.where_spent}</td>
+                <td>${formatPayment(e.payment_method)}</td>
+                <td class="action-cell">
+                    <button class="edit-btn" data-id="${e.id}">Edit</button>
+                    <button class="delete-btn" data-id="${e.id}">Delete</button>
+                </td>
+            </tr>
+        `).join('');
     }
 
-    // STATS
+    function formatPayment(method) {
+        const map = { cash: '💵 Cash', card: '💳 Card', easypaisa: '📱 Easypaisa', jazzcash: '📱 JazzCash' };
+        return map[method] || method || '—';
+    }
+
+    // ── STATS ─────────────────────────────────────────────────────
     function renderStats(expenses) {
         const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
         const personal = expenses.filter(e => e.category === "Personal")
@@ -256,47 +415,73 @@
         const professional = expenses.filter(e => e.category === "Professional")
             .reduce((s, e) => s + Number(e.amount), 0);
 
-        document.getElementById("statTotal").textContent = `Rs ${total}`;
-        document.getElementById("statPersonal").textContent = `Rs ${personal}`;
-        document.getElementById("statProfessional").textContent = `Rs ${professional}`;
+        document.getElementById("statTotal").textContent = `Rs ${total.toLocaleString()}`;
+        document.getElementById("statPersonal").textContent = `Rs ${personal.toLocaleString()}`;
+        document.getElementById("statProfessional").textContent = `Rs ${professional.toLocaleString()}`;
     }
 
-    // CHART
+    // ── CHART ─────────────────────────────────────────────────────
     function renderChart(expenses) {
         const personal = expenses.filter(e => e.category === "Personal")
             .reduce((s, e) => s + Number(e.amount), 0);
-
         const professional = expenses.filter(e => e.category === "Professional")
             .reduce((s, e) => s + Number(e.amount), 0);
 
         const ctx = document.getElementById("expenseChart").getContext("2d");
-
         if (chart) chart.destroy();
+
+        if (personal === 0 && professional === 0) {
+            document.getElementById("expenseChart").style.display = "none";
+            document.getElementById("chartEmpty").style.display = "block";
+            return;
+        }
+
+        document.getElementById("expenseChart").style.display = "block";
+        document.getElementById("chartEmpty").style.display = "none";
 
         chart = new Chart(ctx, {
             type: "doughnut",
             data: {
                 labels: ["Personal", "Professional"],
                 datasets: [{
-                    data: [personal, professional]
+                    data: [personal, professional],
+                    backgroundColor: ["#4da6ff", "#ff6b6b"],
+                    borderColor: ["#1a1a1a", "#1a1a1a"],
+                    borderWidth: 3,
+                    hoverOffset: 8
                 }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#b0b0b0', padding: 16, font: { size: 13 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` Rs ${Number(ctx.raw).toLocaleString()}`
+                        }
+                    }
+                },
+                cutout: '60%'
             }
         });
     }
 
-    // ADD
+    // ── ADD EXPENSE ───────────────────────────────────────────────
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
-
         submitBtn.disabled = true;
+        submitBtn.textContent = "Adding...";
 
         const data = {
-            date: date.value,
-            time: time.value || null,
-            amount: amount.value,
-            category: useType.value,
-            where_spent: whereSpent.value,
-            payment_method: paymentMethod.value
+            date: document.getElementById("date").value,
+            time: document.getElementById("time").value || null,
+            amount: document.getElementById("amount").value,
+            category: document.getElementById("useType").value,
+            whereSpent: document.getElementById("whereSpent").value,
+            paymentMethod: document.getElementById("paymentMethod").value,
         };
 
         try {
@@ -306,34 +491,124 @@
                 body: JSON.stringify(data)
             });
 
-            if (!res.ok) throw new Error();
+            const result = await res.json();
 
-            showMessage("Expense added!");
+            if (!res.ok) {
+                showMessage(result.error || "Error adding expense", "error");
+                return;
+            }
+
+            showMessage("✅ Expense added!");
             form.reset();
+            document.getElementById("date").value = new Date().toISOString().split("T")[0];
             fetchExpenses();
 
         } catch {
-            showMessage("Error adding expense", "error");
+            showMessage("Server error", "error");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "+ Add Expense";
+        }
+    });
+
+    // ── TABLE ACTIONS ─────────────────────────────────────────────
+    tableBody.addEventListener("click", async (e) => {
+        const id = e.target.dataset.id;
+        if (!id) return;
+
+        if (e.target.classList.contains("delete-btn")) {
+            if (!confirm("Delete this expense?")) return;
+            const res = await fetch(`/expenses/${id}/`, { method: "DELETE" });
+            if (res.ok) {
+                showMessage("🗑️ Expense deleted");
+                fetchExpenses();
+            } else {
+                showMessage("Delete failed", "error");
+            }
         }
 
-        submitBtn.disabled = false;
+        if (e.target.classList.contains("edit-btn")) {
+            const expense = allExpenses.find(ex => ex.id == id);
+            if (expense) openEditModal(expense);
+        }
     });
 
-    // DELETE
-    tableBody.addEventListener("click", async (e) => {
-        if (!e.target.classList.contains("delete-btn")) return;
+    // ── EDIT MODAL ────────────────────────────────────────────────
+    function openEditModal(expense) {
+        currentEditId = expense.id;
+        document.getElementById("editDate").value = expense.date;
+        document.getElementById("editTime").value = expense.time || "";
+        document.getElementById("editAmount").value = expense.amount;
+        document.getElementById("editCategory").value = expense.category;
+        document.getElementById("editWhereSpent").value = expense.where_spent;
+        document.getElementById("editPaymentMethod").value = expense.payment_method;
+        editModal.style.display = "flex";
+    }
 
-        const id = e.target.dataset.id;
+    function closeEditModal() {
+        editModal.style.display = "none";
+        currentEditId = null;
+    }
 
-        await fetch(`/expenses/${id}/`, { method: "DELETE" });
-        fetchExpenses();
+    document.getElementById("modalClose").addEventListener("click", closeEditModal);
+    document.getElementById("modalCancelBtn").addEventListener("click", closeEditModal);
+    editModal.addEventListener("click", (e) => {
+        if (e.target === editModal) closeEditModal();
     });
 
-    // FILTER EVENTS
+    document.getElementById("modalSaveBtn").addEventListener("click", async () => {
+        if (!currentEditId) return;
+
+        const saveBtn = document.getElementById("modalSaveBtn");
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+
+        const data = {
+            date: document.getElementById("editDate").value,
+            time: document.getElementById("editTime").value || null,
+            amount: document.getElementById("editAmount").value,
+            category: document.getElementById("editCategory").value,
+            whereSpent: document.getElementById("editWhereSpent").value,
+            paymentMethod: document.getElementById("editPaymentMethod").value,
+        };
+
+        try {
+            const res = await fetch(`/expenses/${currentEditId}/`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+
+            if (!res.ok) {
+                showMessage(result.error || "Update failed", "error");
+                return;
+            }
+
+            showMessage("✅ Expense updated!");
+            closeEditModal();
+            fetchExpenses();
+
+        } catch {
+            showMessage("Server error", "error");
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = "Save Changes";
+        }
+    });
+
+    // ── FILTER EVENTS ─────────────────────────────────────────────
     typeFilter.addEventListener("change", applyFilters);
     timeFilter.addEventListener("change", applyFilters);
+    paymentFilter.addEventListener("change", applyFilters);
+    dateFrom.addEventListener("change", applyFilters);
+    dateTo.addEventListener("change", applyFilters);
+    amountMin.addEventListener("input", applyFilters);
+    amountMax.addEventListener("input", applyFilters);
+    searchInput.addEventListener("input", applyFilters);
 
-    // INIT
+    // ── INIT ──────────────────────────────────────────────────────
     document.getElementById("date").value = new Date().toISOString().split("T")[0];
     fetchExpenses();
 </script>
