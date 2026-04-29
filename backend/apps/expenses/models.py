@@ -1,6 +1,7 @@
 # apps/expenses/models.py
 
 from django.db import models
+from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
@@ -17,6 +18,8 @@ class Expense(models.Model):
         ('Professional', 'Professional'),
     ]
 
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='expenses')
+    title = models.CharField(max_length=255, blank=True, default='')
     amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -27,9 +30,10 @@ class Expense(models.Model):
     date = models.DateField()
     time = models.TimeField(null=True, blank=True)
     where_spent = models.CharField(max_length=255)
+    notes = models.TextField(blank=True, default='')
 
     class Meta:
         ordering = ['-date', '-id']
 
     def __str__(self):
-        return f"{self.date} | {self.category} | Rs {self.amount}"
+        return f"{self.user.username} | {self.date} | {self.category} | Rs {self.amount}"

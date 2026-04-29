@@ -22,25 +22,26 @@
 
             <ul class="nav-list">
                 <li class="nav-item">
-                    <a href="/" class="{% block nav_home %}{% endblock %}">
-                        🏠 Home
-                    </a>
+                    <a href="/" class="{% block nav_home %}{% endblock %}">🏠 Home</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/dashboard/" class="{% block nav_dashboard %}{% endblock %}">
-                        📊 Dashboard
-                    </a>
+                    <a href="/dashboard/" class="{% block nav_dashboard %}{% endblock %}">📊 Dashboard</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/rosca/" class="{% block nav_rosca %}{% endblock %}">
-                        🤝 ROSCA
-                    </a>
+                    <a href="/rosca/" class="{% block nav_rosca %}{% endblock %}">🤝 ROSCA</a>
+                </li>
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <span class="nav-username">👤 {{ user.username }}</span>
                 </li>
                 <li class="nav-item">
-                    <a href="/login/" class="{% block nav_login %}{% endblock %}">
-                        🔐 Login
-                    </a>
+                    <a href="/logout/" class="nav-logout">🚪 Logout</a>
                 </li>
+                {% else %}
+                <li class="nav-item">
+                    <a href="/login/" class="{% block nav_login %}{% endblock %}">🔐 Login</a>
+                </li>
+                {% endif %}
             </ul>
         </div>
     </nav>
