@@ -52,6 +52,15 @@
                         <option value="jazzcash">JazzCash</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label for="title">Title (optional)</label>
+                    <input type="text" id="title" placeholder="e.g. Team lunch, Monthly bill">
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notes (optional)</label>
+                    <input type="text" id="notes" placeholder="Any additional details...">
+                </div>
                 <div class="form-group" style="align-self: flex-end;">
                     <button type="submit" class="btn btn-submit" id="submitBtn">
                         + Add Expense
@@ -167,6 +176,7 @@
         <div class="table-header">
             <h2>Expenses</h2>
             <span id="expenseCount" class="expense-count"></span>
+            <button class="btn clear-all-btn" id="clearAllBtn">🗑️ Clear All</button>
         </div>
         <div class="table-container">
             <table>
@@ -230,6 +240,14 @@
                         <option value="jazzcash">JazzCash</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label>Title (optional)</label>
+                    <input type="text" id="editTitle" placeholder="e.g. Team lunch">
+                </div>
+                <div class="form-group">
+                    <label>Notes (optional)</label>
+                    <input type="text" id="editNotes" placeholder="Any additional details...">
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn" id="modalCancelBtn">Cancel</button>
@@ -275,14 +293,15 @@
 
     // ── FETCH ─────────────────────────────────────────────────────
     async function fetchExpenses() {
-        try {
-            const res = await fetch("/expenses/");
-            allExpenses = await res.json();
-            applyFilters();
-        } catch {
-            showMessage("Failed to load expenses", "error");
+            try {
+                const res = await fetch("/expenses/");
+                const json = await res.json();
+                allExpenses = json.data || json; // ← handles both formats
+                applyFilters();
+            } catch {
+                showMessage("Failed to load expenses", "error");
+            }
         }
-    }
 
     // ── FILTER ────────────────────────────────────────────────────
     function applyFilters() {
@@ -482,6 +501,8 @@
             category: document.getElementById("useType").value,
             whereSpent: document.getElementById("whereSpent").value,
             paymentMethod: document.getElementById("paymentMethod").value,
+            title: document.getElementById("title").value || "",
+            notes: document.getElementById("notes").value || "",
         };
 
         try {
@@ -543,6 +564,8 @@
         document.getElementById("editWhereSpent").value = expense.where_spent;
         document.getElementById("editPaymentMethod").value = expense.payment_method;
         editModal.style.display = "flex";
+        document.getElementById("editTitle").value = expense.title || "";
+        document.getElementById("editNotes").value = expense.notes || "";
     }
 
     function closeEditModal() {
@@ -570,6 +593,8 @@
             category: document.getElementById("editCategory").value,
             whereSpent: document.getElementById("editWhereSpent").value,
             paymentMethod: document.getElementById("editPaymentMethod").value,
+            title: document.getElementById("editTitle").value || "",
+            notes: document.getElementById("editNotes").value || "",
         };
 
         try {
@@ -597,6 +622,17 @@
             saveBtn.textContent = "Save Changes";
         }
     });
+
+    document.getElementById("clearAllBtn").addEventListener("click", async () => {
+            if (!confirm("Delete ALL expenses? This cannot be undone.")) return;
+            const res = await fetch("/expenses/clear/", { method: "DELETE" });
+            if (res.ok) {
+                showMessage("🗑️ All expenses cleared");
+                fetchExpenses();
+            } else {
+                showMessage("Failed to clear", "error");
+            }
+        });
 
     // ── FILTER EVENTS ─────────────────────────────────────────────
     typeFilter.addEventListener("change", applyFilters);

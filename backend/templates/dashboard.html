@@ -272,6 +272,7 @@
                 const res = await fetch("/insights/");
                 if (!res.ok) throw new Error();
                 const data = await res.json();
+                const insight = data.data || data;
 
                 card.innerHTML = `
             <div class="ai-insights-inner">
@@ -281,12 +282,12 @@
                 <div class="ai-insights-body">
                     <div class="ai-section">
                         <div class="ai-section-label">📊 Monthly Summary</div>
-                        <p>${data.summary}</p>
+                        <p>${insight.summary}</p>
                     </div>
-                    ${data.forecast ? `
+                    ${insight.forecast ? `
                     <div class="ai-section">
                         <div class="ai-section-label">🔮 Forecast</div>
-                        <p>${data.forecast}</p>
+                        <p>${insight.forecast}</p>
                     </div>` : ''}
                 </div>
             </div>
@@ -299,8 +300,8 @@
     async function loadDashboard() {
             try {
                 const res = await fetch("/expenses/");
-                if (!res.ok) throw new Error();
-                const expenses = await res.json();
+                const json = await res.json();
+                const expenses = json.data || json; // ← fix here
 
                 renderStats(expenses);
                 renderDoughnut(expenses);
@@ -309,8 +310,7 @@
             } catch {
                 console.error("Dashboard load failed");
             }
-
-            loadInsights(); // runs independently
+            loadInsights();
         }
 
     loadDashboard();
