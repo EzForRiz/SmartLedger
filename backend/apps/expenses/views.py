@@ -1,3 +1,5 @@
+# apps/expenses/views.py
+
 import json
 from datetime import datetime, date as date_type
 from django.http import JsonResponse
@@ -13,7 +15,7 @@ from .models import Expense
 from apps.ai_insights.services import generate_insights
 
 
-# ───────────────── HELPERS ─────────────────
+# Helpers
 
 def parse_date(date_str):
     if "/" in date_str:
@@ -64,7 +66,7 @@ def validate_common(data):
     }, None
 
 
-# ───────────────── AUTH ─────────────────
+# Authentication
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -116,7 +118,7 @@ def logout_view(request):
     return redirect("/login/")
 
 
-# ───────────────── PAGES ─────────────────
+#  PAGES 
 
 @login_required
 def home(request):
@@ -133,7 +135,7 @@ def rosca(request):
     return render(request, "rosca.html")
 
 
-# ───────────────── EXPENSES API ─────────────────
+#  EXPENSES API 
 
 @login_required
 @csrf_exempt
@@ -182,7 +184,7 @@ def expenses_list(request):
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
-# ───────────────── DETAIL ─────────────────
+# DETAIL
 
 @login_required
 @csrf_exempt
@@ -221,7 +223,7 @@ def expense_detail(request, id):
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
-# ───────────────── INSIGHTS ─────────────────
+# INSIGHTS 
 
 @login_required
 def insights(request):
@@ -232,7 +234,7 @@ def insights(request):
     })
 
 
-# ───────────────── CLEAR ALL ─────────────────
+# CLEAR ALL
 
 @login_required
 @csrf_exempt

@@ -370,7 +370,7 @@
         renderChart(filtered);
     }
 
-    // ── CLEAR FILTERS ─────────────────────────────────────────────
+    // CLEAR FILTERS 
     document.getElementById("clearFiltersBtn").addEventListener("click", () => {
         typeFilter.value = "all";
         timeFilter.value = "all";
@@ -391,7 +391,7 @@
         applyFilters();
     });
 
-    // ── TABLE ─────────────────────────────────────────────────────
+    // ── TABLE 
     function renderTable(expenses) {
         document.getElementById("expenseCount").textContent =
             expenses.length ? `${expenses.length} item${expenses.length !== 1 ? 's' : ''}` : "";
@@ -426,7 +426,7 @@
         return map[method] || method || '—';
     }
 
-    // ── STATS ─────────────────────────────────────────────────────
+    // ── STATS 
     function renderStats(expenses) {
         const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
         const personal = expenses.filter(e => e.category === "Personal")
@@ -439,7 +439,7 @@
         document.getElementById("statProfessional").textContent = `Rs ${professional.toLocaleString()}`;
     }
 
-    // ── CHART ─────────────────────────────────────────────────────
+    // ── CHART 
     function renderChart(expenses) {
         const personal = expenses.filter(e => e.category === "Personal")
             .reduce((s, e) => s + Number(e.amount), 0);
@@ -488,7 +488,7 @@
         });
     }
 
-    // ── ADD EXPENSE ───────────────────────────────────────────────
+    // ── ADD EXPENSE 
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         submitBtn.disabled = true;
@@ -532,7 +532,7 @@
         }
     });
 
-    // ── TABLE ACTIONS ─────────────────────────────────────────────
+    // ── TABLE ACTIONS 
     tableBody.addEventListener("click", async (e) => {
         const id = e.target.dataset.id;
         if (!id) return;
@@ -554,7 +554,7 @@
         }
     });
 
-    // ── EDIT MODAL ────────────────────────────────────────────────
+    // ── EDIT MODAL 
     function openEditModal(expense) {
         currentEditId = expense.id;
         document.getElementById("editDate").value = expense.date;
@@ -634,7 +634,7 @@
             }
         });
 
-    // ── FILTER EVENTS ─────────────────────────────────────────────
+    // FILTER EVENTS 
     typeFilter.addEventListener("change", applyFilters);
     timeFilter.addEventListener("change", applyFilters);
     paymentFilter.addEventListener("change", applyFilters);
@@ -644,7 +644,7 @@
     amountMax.addEventListener("input", applyFilters);
     searchInput.addEventListener("input", applyFilters);
 
-    // ── INIT ──────────────────────────────────────────────────────
+    // ── INIT 
     document.getElementById("date").value = new Date().toISOString().split("T")[0];
     fetchExpenses();
 </script>

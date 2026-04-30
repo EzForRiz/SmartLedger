@@ -93,7 +93,7 @@
 
 {% block scripts %}
 <script>
-    // ── DATE ──────────────────────────────────────────────────────
+    // Date 
     const now = new Date();
     document.getElementById("dashDate").textContent = now.toLocaleDateString('en-PK', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
@@ -102,7 +102,7 @@
     let doughnutChart, barChart;
 
 
-    // ── STATS ─────────────────────────────────────────────────────
+    // STATS 
     function renderStats(expenses) {
         const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
         const personal = expenses.filter(e => e.category === 'Personal').reduce((s, e) => s + Number(e.amount), 0);
@@ -124,7 +124,7 @@
         document.getElementById("statMonthCount").textContent = `${thisMonth.length} expense${thisMonth.length !== 1 ? 's' : ''}`;
     }
 
-    // ── DOUGHNUT ──────────────────────────────────────────────────
+    // ── DOUGHNUT 
     function renderDoughnut(expenses) {
         const personal = expenses.filter(e => e.category === 'Personal').reduce((s, e) => s + Number(e.amount), 0);
         const professional = expenses.filter(e => e.category === 'Professional').reduce((s, e) => s + Number(e.amount), 0);
@@ -168,7 +168,7 @@
         });
     }
 
-    // ── BAR CHART (last 6 months) ─────────────────────────────────
+    // BAR CHART (last 6 months) 
     function renderBar(expenses) {
         const months = [];
         const labels = [];
@@ -240,7 +240,7 @@
     }
 
 
-    // ── PAYMENT BREAKDOWN ─────────────────────────────────────────
+    // PAYMENT BREAKDOWN 
     function renderPaymentBreakdown(expenses) {
         const methods = { cash: '💵 Cash', card: '💳 Card', easypaisa: '📱 Easypaisa', jazzcash: '📱 JazzCash' };
         const total = expenses.reduce((s, e) => s + Number(e.amount), 0);

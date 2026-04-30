@@ -1,6 +1,5 @@
 # backend/apps/ai_insights/services.py
 
-
 from django.conf import settings
 from groq import Groq
 from django.db.models import Sum
@@ -8,17 +7,12 @@ from collections import defaultdict
 import datetime
 
 
-
 def generate_insights(expenses):
-
     client = Groq(api_key=settings.GROQ_API_KEY)
-
-    # ── STATS ─────────────────────────────────────────────────────
     total = float(expenses.aggregate(Sum("amount"))["amount__sum"] or 0)
     personal = float(expenses.filter(category="Personal").aggregate(Sum("amount"))["amount__sum"] or 0)
     professional = float(expenses.filter(category="Professional").aggregate(Sum("amount"))["amount__sum"] or 0)
 
-    # Monthly breakdown
     monthly = defaultdict(float)
     for e in expenses:
         key = e.date.strftime("%B %Y")
@@ -29,19 +23,15 @@ def generate_insights(expenses):
         for month, amount in sorted(monthly.items())
     ) or "  - No data yet"
 
-    # Top locations
     locations = defaultdict(float)
     for e in expenses:
         locations[e.where_spent] += float(e.amount)
-
     top_locations = sorted(locations.items(), key=lambda x: x[1], reverse=True)[:3]
     locations_str = ", ".join(
         f"{loc} (Rs {amt:,.0f})" for loc, amt in top_locations
     ) or "None"
-
     current_month = datetime.date.today().strftime("%B %Y")
-
-    # ── PROMPT ────────────────────────────────────────────────────
+    
     prompt = f"""
 You are a smart personal finance assistant for a Pakistani user.
 Analyze this expense data and respond with TWO short paragraphs only:
@@ -64,7 +54,6 @@ Top locations: {locations_str}
 Write SUMMARY paragraph, blank line, then FORECAST paragraph. Nothing else.
 """
 
-    # ── CALL GROQ ─────────────────────────────────────────────────
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -84,6 +73,7 @@ Write SUMMARY paragraph, blank line, then FORECAST paragraph. Nothing else.
 
         full_text = response.choices[0].message.content.strip()
         paragraphs = [p.strip() for p in full_text.split("\n\n") if p.strip()]
+
         summary = paragraphs[0] if paragraphs else full_text
         forecast = paragraphs[1] if len(paragraphs) > 1 else ""
 
