@@ -5,35 +5,88 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
+class IncomeHistory(models.Model):
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="income_history"
+    )
+
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
+
+    effective_from = models.DateField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-effective_from"]
+
+    def __str__(self):
+        return f"{self.user.username} | Income: {self.amount} | {self.effective_from}"
+
+
 class Expense(models.Model):
+
     PAYMENT_CHOICES = [
-        ('cash', 'Cash'),
-        ('card', 'Card'),
-        ('easypaisa', 'Easypaisa'),
-        ('jazzcash', 'JazzCash'),
+        ("cash", "Cash"),
+        ("card", "Card"),
+        ("easypaisa", "Easypaisa"),
+        ("jazzcash", "JazzCash"),
     ]
 
     CATEGORY_CHOICES = [
-        ('Personal', 'Personal'),
-        ('Professional', 'Professional'),
+        ("Personal", "Personal"),
+        ("Professional", "Professional"),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='expenses')
-    title = models.CharField(max_length=255, blank=True, default='')
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="expenses"
+    )
+
+    title = models.CharField(
+        max_length=255,
+        blank=True,
+        default=""
+    )
+
     amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(1), MaxValueValidator(9999999)]
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(9999999)
+        ]
     )
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
-    payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES)
+
+    category = models.CharField(
+        max_length=20,
+        choices=CATEGORY_CHOICES
+    )
+
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_CHOICES
+    )
+
     date = models.DateField()
-    time = models.TimeField(null=True, blank=True)
+
+    time = models.TimeField(
+        null=True,
+        blank=True
+    )
+
     where_spent = models.CharField(max_length=255)
-    notes = models.TextField(blank=True, default='')
+
+    notes = models.TextField(
+        blank=True,
+        default=""
+    )
 
     class Meta:
-        ordering = ['-date', '-id']
-
-    def __str__(self):
-        return f"{self.user.username} | {self.date} | {self.category} | Rs {self.amount}"
+        ordering = ["-date", "-id"]

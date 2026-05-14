@@ -4,14 +4,29 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.home),
-    path('dashboard/', views.dashboard),
-    path('rosca/', views.rosca),
-    path('login/', views.login_view),
-    path('register/', views.register_view),
-    path('logout/', views.logout_view),
-    path('expenses/', views.expenses_list),
-    path('expenses/clear/', views.clear_all_expenses),
-    path('expenses/<int:id>/', views.expense_detail),
-    path('insights/', views.insights),
+
+    path("", views.home),
+
+    path("dashboard/", views.dashboard),
+
+    path("rosca/", views.rosca),
+
+    path("login/", views.login_view),
+
+    path("register/", views.register_view),
+
+    path("logout/", views.logout_view),
+
+    path("expenses/", views.expenses_list),
+
+    path("expenses/clear/", views.clear_all_expenses),
+
+    path("expenses/<int:id>/", views.expense_detail),
+
+    path("insights/", views.insights),
+
+    path("income/", views.income_view),
+    path("income/history/",      views.income_history_view),
+
+    path("finance-summary/", views.finance_summary),
 ]

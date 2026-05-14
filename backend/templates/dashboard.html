@@ -6,137 +6,770 @@
 {% block title %}Dashboard — Smart Ledger{% endblock %}
 {% block nav_dashboard %}active{% endblock %}
 
+{% block head_extra %}
+<style>
+    /* ══════════════════════════════════════════════════════
+   INCOME MODAL — upgraded styles
+   ══════════════════════════════════════════════════════ */
+
+    /* ── Modal shell ─────────────────────────────────────── */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(6, 6, 18, 0.82);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        animation: overlayIn 0.2s ease;
+    }
+
+    @keyframes overlayIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .income-modal-box {
+        background: linear-gradient(160deg, #0f0f23 0%, #13132a 100%);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-radius: 20px;
+        width: min(480px, 96vw);
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(67, 224, 151, 0.08);
+        animation: modalIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+        overflow: hidden;
+    }
+
+    @keyframes modalIn {
+        from {
+            opacity: 0;
+            transform: scale(0.92) translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    /* ── Tab bar ─────────────────────────────────────────── */
+    .income-tabs {
+        display: flex;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .income-tab {
+        flex: 1;
+        padding: 1rem 0;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary, #a0a8c0);
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        position: relative;
+        transition: color 0.2s;
+    }
+
+    .income-tab.active {
+        color: #43e097;
+    }
+
+    .income-tab::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 20%;
+        right: 20%;
+        height: 2px;
+        background: #43e097;
+        border-radius: 2px 2px 0 0;
+        transform: scaleX(0);
+        transition: transform 0.25s ease;
+    }
+
+    .income-tab.active::after {
+        transform: scaleX(1);
+    }
+
+    /* ── Modal header ────────────────────────────────────── */
+    .income-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem 1.5rem 0;
+    }
+
+    .income-modal-header h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+    }
+
+    .modal-close-btn {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #a0a8c0;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .modal-close-btn:hover {
+        background: rgba(255, 94, 114, 0.2);
+        color: #ff5e72;
+    }
+
+    /* ── Tab panels ──────────────────────────────────────── */
+    .income-panel {
+        display: none;
+        padding: 1.25rem 1.5rem 1.5rem;
+    }
+
+    .income-panel.active {
+        display: block;
+    }
+
+    /* ── Form fields ─────────────────────────────────────── */
+    .income-form-group {
+        margin-bottom: 1.1rem;
+    }
+
+    .income-form-group label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: #a0a8c0;
+        margin-bottom: 0.4rem;
+    }
+
+    .income-input-wrap {
+        position: relative;
+    }
+
+    .income-input-prefix {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #43e097;
+        pointer-events: none;
+    }
+
+    .income-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1.5px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-sizing: border-box;
+    }
+
+    .income-input:focus {
+        outline: none;
+        border-color: #43e097;
+        box-shadow: 0 0 0 3px rgba(67, 224, 151, 0.12);
+    }
+
+    .income-input.error {
+        border-color: #ff5e72;
+        box-shadow: 0 0 0 3px rgba(255, 94, 114, 0.12);
+    }
+
+    .income-input.valid {
+        border-color: #43e097;
+    }
+
+    .income-input-no-prefix {
+        padding-left: 1rem;
+    }
+
+    /* ── Validation messages ─────────────────────────────── */
+    .income-field-msg {
+        font-size: 0.75rem;
+        margin-top: 0.3rem;
+        min-height: 1rem;
+        transition: all 0.2s;
+        color: #ff5e72;
+    }
+
+    .income-field-msg.ok {
+        color: #43e097;
+    }
+
+    /* ── Live preview strip ──────────────────────────────── */
+    .income-preview {
+        background: rgba(67, 224, 151, 0.06);
+        border: 1px solid rgba(67, 224, 151, 0.18);
+        border-radius: 12px;
+        padding: 0.85rem 1.1rem;
+        margin-bottom: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        opacity: 0;
+        transform: translateY(4px);
+        transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .income-preview.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .income-preview-label {
+        font-size: 0.72rem;
+        color: #a0a8c0;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        font-weight: 600;
+    }
+
+    .income-preview-value {
+        font-size: 1.15rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #43e097, #4da6ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* ── Footer buttons ──────────────────────────────────── */
+    .income-modal-footer {
+        display: flex;
+        gap: 0.75rem;
+        padding-top: 0.25rem;
+    }
+
+    .income-btn-cancel {
+        flex: 1;
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        color: #a0a8c0;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .income-btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.09);
+    }
+
+    .income-btn-save {
+        flex: 2;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #43e097, #4da6ff);
+        border: none;
+        border-radius: 10px;
+        color: #0a0a1a;
+        font-size: 0.875rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.15s;
+    }
+
+    .income-btn-save:hover:not(:disabled) {
+        opacity: 0.92;
+        transform: translateY(-1px);
+    }
+
+    .income-btn-save:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* ── Success flash ───────────────────────────────────── */
+    .income-success-flash {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        gap: 0.5rem;
+    }
+
+    .income-success-icon {
+        font-size: 2.5rem;
+        animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+        from {
+            transform: scale(0);
+        }
+
+        to {
+            transform: scale(1);
+        }
+    }
+
+    .income-success-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #43e097;
+    }
+
+    .income-success-sub {
+        font-size: 0.85rem;
+        color: #a0a8c0;
+    }
+
+    /* ── History tab ─────────────────────────────────────── */
+    .income-history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        max-height: 320px;
+        overflow-y: auto;
+        padding-right: 2px;
+    }
+
+    .income-history-list::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .income-history-list::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .income-history-list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+
+    .income-history-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+        transition: background 0.2s;
+    }
+
+    .income-history-item:first-child {
+        border-color: rgba(67, 224, 151, 0.25);
+        background: rgba(67, 224, 151, 0.05);
+    }
+
+    .income-history-item:hover {
+        background: rgba(255, 255, 255, 0.07);
+    }
+
+    .income-history-left {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .income-history-amount {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .income-history-item:first-child .income-history-amount {
+        background: linear-gradient(135deg, #43e097, #4da6ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .income-history-date {
+        font-size: 0.75rem;
+        color: #a0a8c0;
+    }
+
+    .income-history-badge {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        background: rgba(67, 224, 151, 0.15);
+        color: #43e097;
+        border: 1px solid rgba(67, 224, 151, 0.3);
+        padding: 0.2rem 0.55rem;
+        border-radius: 20px;
+    }
+
+    .income-history-empty {
+        text-align: center;
+        padding: 2rem;
+        color: #a0a8c0;
+        font-size: 0.875rem;
+    }
+
+    .income-history-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 2rem;
+        color: #a0a8c0;
+        font-size: 0.875rem;
+    }
+
+    .income-spinner-sm {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(67, 224, 151, 0.2);
+        border-top-color: #43e097;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
 
+    <!-- PAGE HEADER -->
     <div class="page-header">
         <div>
             <h1>Dashboard</h1>
-            <p class="page-subtitle">Your spending overview at a glance</p>
+            <p class="page-subtitle">Your financial overview at a glance</p>
         </div>
-        <div id="dashDate" class="dash-date"></div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.5rem;">
+            <div id="dashDate" class="dash-date"></div>
+            <button id="openIncomeModal" class="btn btn-submit" style="font-size:0.85rem; padding:0.5rem 1.2rem;">
+                💰 Update Income
+            </button>
+        </div>
     </div>
 
-    <!-- STATS CARDS -->
+    <!-- STAT CARDS -->
     <div class="stats-container">
-        <div class="stat-card total-stat">
-            <div class="stat-label">💰 Total Spent</div>
-            <div class="stat-value" id="statTotal">—</div>
-            <div class="stat-sub" id="statCount">— expenses</div>
+
+        <div class="stat-card" style="border-top: 2px solid #43e097;">
+            <div class="stat-label">💰 Monthly Income</div>
+            <div class="stat-value" id="statIncome"
+                style="background: linear-gradient(135deg,#43e097,#4da6ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+                —</div>
+            <div class="stat-sub" id="incomeStatus">Not set</div>
         </div>
+
+        <div class="stat-card" style="border-top: 2px solid #a78bfa;">
+            <div class="stat-label">📊 Remaining Budget</div>
+            <div class="stat-value" id="budgetRemaining">—</div>
+            <div class="stat-sub" id="budgetStatus">Loading...</div>
+        </div>
+
+        <div class="stat-card total-stat">
+            <div class="stat-label">🧾 This Month</div>
+            <div class="stat-value" id="statMonth">—</div>
+            <div class="stat-sub" id="statMonthCount">— expenses</div>
+        </div>
+
         <div class="stat-card personal-stat">
             <div class="stat-label">👤 Personal</div>
             <div class="stat-value" id="statPersonal">—</div>
             <div class="stat-sub" id="statPersonalPct">—% of total</div>
         </div>
+
         <div class="stat-card professional-stat">
             <div class="stat-label">💼 Professional</div>
             <div class="stat-value" id="statProfessional">—</div>
             <div class="stat-sub" id="statProfessionalPct">—% of total</div>
         </div>
-        <div class="stat-card month-stat">
-            <div class="stat-label">📅 This Month</div>
-            <div class="stat-value" id="statMonth">—</div>
-            <div class="stat-sub" id="statMonthCount">— expenses</div>
+
+        <div class="stat-card" style="border-top: 2px solid #f472b6;">
+            <div class="stat-label">📈 All-Time Total</div>
+            <div class="stat-value" id="statTotal">—</div>
+            <div class="stat-sub" id="statTotalCount">— expenses</div>
         </div>
+
     </div>
 
-    <!-- AI INSIGHTS -->
+    <!-- AI INSIGHTS CARD -->
     <div class="ai-insights-card" id="aiInsightsCard">
         <div class="ai-insights-loading">
             <div class="ai-spinner"></div>
-            <span>Generating AI insights...</span>
+            <span>Generating AI financial intelligence...</span>
         </div>
     </div>
 
     <!-- CHARTS ROW -->
     <div class="charts-grid">
 
-        <!-- Doughnut -->
         <div class="chart-card">
             <div class="chart-card-header">
                 <h3>Spending Breakdown</h3>
-                <span class="chart-badge">All Time</span>
+                <span class="chart-badge" id="doughnutBadge">This Month</span>
             </div>
-            <div class="chart-wrapper">
+            <div class="chart-wrapper" style="height:240px;">
                 <canvas id="doughnutChart"></canvas>
                 <div id="doughnutCenter" class="doughnut-center"></div>
             </div>
         </div>
 
-        <!-- Bar chart - monthly -->
         <div class="chart-card">
             <div class="chart-card-header">
                 <h3>Monthly Spending</h3>
                 <span class="chart-badge">Last 6 Months</span>
             </div>
-            <div class="chart-wrapper">
+            <div class="chart-wrapper" style="height:240px;">
                 <canvas id="barChart"></canvas>
             </div>
         </div>
 
     </div>
 
-    <!-- PAYMENT METHOD BREAKDOWN -->
+    <!-- PAYMENT METHODS CARD -->
     <div class="chart-card" style="margin-bottom: 2rem;">
         <div class="chart-card-header">
             <h3>Payment Methods</h3>
-            <span class="chart-badge">All Time</span>
+            <span class="chart-badge" id="paymentBadge">All Time</span>
         </div>
-        <div class="payment-breakdown" id="paymentBreakdown">
-            <!-- filled by JS -->
+        <div id="paymentBreakdown" class="payment-breakdown" style="padding: 0.5rem 0.5rem 1rem;">
+            <p style="color:var(--text-secondary); font-size:0.9rem; padding:1rem;">Loading...</p>
         </div>
     </div>
 
 </div>
+
+<!-- ══════════════════════════════════════════════════════
+     INCOME MODAL — upgraded (validation + history tab)
+     ══════════════════════════════════════════════════════ -->
+<div id="incomeModal" class="modal-overlay" style="display:none;">
+    <div class="income-modal-box">
+
+        <!-- Header -->
+        <div class="income-modal-header">
+            <h3>💰 Monthly Income</h3>
+            <button class="modal-close-btn" id="closeIncomeModal">✕</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="income-tabs">
+            <button class="income-tab active" data-tab="update">Update</button>
+            <button class="income-tab" data-tab="history">History</button>
+        </div>
+
+        <!-- Tab: Update -->
+        <div class="income-panel active" id="tabUpdate">
+
+            <!-- Live preview -->
+            <div class="income-preview" id="incomePreview">
+                <div class="income-preview-label">Monthly Income Preview</div>
+                <div class="income-preview-value" id="incomePreviewVal">Rs 0</div>
+            </div>
+
+            <!-- Amount -->
+            <div class="income-form-group">
+                <label>Amount (Rs)</label>
+                <div class="income-input-wrap">
+                    <span class="income-input-prefix">Rs</span>
+                    <input type="number" id="incomeInput" class="income-input" placeholder="e.g. 80,000" min="1"
+                        max="99999999">
+                </div>
+                <div class="income-field-msg" id="amountMsg"></div>
+            </div>
+
+            <!-- Effective from -->
+            <div class="income-form-group">
+                <label>Effective From</label>
+                <div class="income-input-wrap">
+                    <input type="date" id="incomeDateInput" class="income-input income-input-no-prefix">
+                </div>
+                <div class="income-field-msg" id="dateMsg"></div>
+            </div>
+
+            <!-- Footer -->
+            <div class="income-modal-footer">
+                <button class="income-btn-cancel" id="cancelIncomeBtn">Cancel</button>
+                <button class="income-btn-save" id="saveIncomeBtn" disabled>Save Income</button>
+            </div>
+        </div>
+
+        <!-- Tab: History -->
+        <div class="income-panel" id="tabHistory">
+            <div id="incomeHistoryContent">
+                <div class="income-history-loading">
+                    <div class="income-spinner-sm"></div>
+                    <span>Loading history...</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Date 
-    const now = new Date();
-    document.getElementById("dashDate").textContent = now.toLocaleDateString('en-PK', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    });
-
+    // ─────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────
     let doughnutChart, barChart;
+    const now = new Date();
 
-
-    // STATS 
-    function renderStats(expenses) {
-        const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
-        const personal = expenses.filter(e => e.category === 'Personal').reduce((s, e) => s + Number(e.amount), 0);
-        const professional = expenses.filter(e => e.category === 'Professional').reduce((s, e) => s + Number(e.amount), 0);
-
-        const thisMonth = expenses.filter(e => {
-            const d = new Date(e.date);
-            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    // ─────────────────────────────────────────────
+    // DATE HEADER
+    // ─────────────────────────────────────────────
+    document.getElementById("dashDate").textContent =
+        now.toLocaleDateString("en-PK", {
+            weekday: "long", year: "numeric",
+            month: "long", day: "numeric"
         });
-        const monthTotal = thisMonth.reduce((s, e) => s + Number(e.amount), 0);
 
-        document.getElementById("statTotal").textContent = `Rs ${total.toLocaleString()}`;
-        document.getElementById("statCount").textContent = `${expenses.length} expense${expenses.length !== 1 ? 's' : ''}`;
-        document.getElementById("statPersonal").textContent = `Rs ${personal.toLocaleString()}`;
-        document.getElementById("statPersonalPct").textContent = total ? `${Math.round((personal / total) * 100)}% of total` : '—';
-        document.getElementById("statProfessional").textContent = `Rs ${professional.toLocaleString()}`;
-        document.getElementById("statProfessionalPct").textContent = total ? `${Math.round((professional / total) * 100)}% of total` : '—';
-        document.getElementById("statMonth").textContent = `Rs ${monthTotal.toLocaleString()}`;
-        document.getElementById("statMonthCount").textContent = `${thisMonth.length} expense${thisMonth.length !== 1 ? 's' : ''}`;
+    // ─────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────
+    function fmt(n) {
+        return "Rs " + Number(n).toLocaleString();
     }
 
-    // ── DOUGHNUT 
+    function pct(part, total) {
+        if (!total) return "0%";
+        return Math.round((part / total) * 100) + "%";
+    }
+
+    // ─────────────────────────────────────────────
+    // STATS
+    // ─────────────────────────────────────────────
+    function renderStats(expenses) {
+        const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
+
+        const personal = expenses
+            .filter(e => e.category === "Personal")
+            .reduce((s, e) => s + Number(e.amount), 0);
+
+        const professional = expenses
+            .filter(e => e.category === "Professional")
+            .reduce((s, e) => s + Number(e.amount), 0);
+
+        const monthExpenses = expenses.filter(e => {
+            const d = new Date(e.date);
+            return d.getMonth() === now.getMonth() &&
+                d.getFullYear() === now.getFullYear();
+        });
+
+        const monthTotal = monthExpenses.reduce((s, e) => s + Number(e.amount), 0);
+
+        document.getElementById("statTotal").textContent = fmt(total);
+        document.getElementById("statTotalCount").textContent =
+            `${expenses.length} expense${expenses.length !== 1 ? "s" : ""}`;
+
+        document.getElementById("statPersonal").textContent = fmt(personal);
+        document.getElementById("statPersonalPct").textContent =
+            `${pct(personal, total)} of total`;
+
+        document.getElementById("statProfessional").textContent = fmt(professional);
+        document.getElementById("statProfessionalPct").textContent =
+            `${pct(professional, total)} of total`;
+
+        document.getElementById("statMonth").textContent = fmt(monthTotal);
+        document.getElementById("statMonthCount").textContent =
+            `${monthExpenses.length} expense${monthExpenses.length !== 1 ? "s" : ""}`;
+    }
+
+    // ─────────────────────────────────────────────
+    // FINANCE SUMMARY (income / budget)
+    // ─────────────────────────────────────────────
+    async function loadFinance() {
+        try {
+            const res = await fetch("/finance-summary/");
+            const json = await res.json();
+            const data = json.data || {};
+
+            const income = data.income || 0;
+            const remaining = data.budget || 0;
+            const savingsRate = data.savings_rate || 0;
+
+            document.getElementById("statIncome").textContent =
+                income > 0 ? fmt(income) : "Not set";
+            document.getElementById("incomeStatus").textContent =
+                income > 0 ? "Monthly salary" : "Tap 'Update Income' to set";
+
+            document.getElementById("budgetRemaining").textContent =
+                income > 0 ? fmt(remaining) : "—";
+
+            if (income > 0) {
+                const isOver = remaining < 0;
+                document.getElementById("budgetStatus").textContent =
+                    isOver
+                        ? `⚠️ Overspending by ${fmt(Math.abs(remaining))}`
+                        : `✅ Savings Rate: ${savingsRate}%`;
+                document.getElementById("budgetRemaining").style.background =
+                    isOver
+                        ? "linear-gradient(135deg,#ff5e72,#ff9a6c)"
+                        : "linear-gradient(135deg,#43e097,#4da6ff)";
+                document.getElementById("budgetRemaining").style.webkitBackgroundClip = "text";
+                document.getElementById("budgetRemaining").style.webkitTextFillColor = "transparent";
+                document.getElementById("budgetRemaining").style.backgroundClip = "text";
+            } else {
+                document.getElementById("budgetStatus").textContent = "Set income to track budget";
+            }
+
+        } catch (e) {
+            document.getElementById("budgetStatus").textContent = "Failed to load";
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // DOUGHNUT CHART
+    // ─────────────────────────────────────────────
     function renderDoughnut(expenses) {
-        const personal = expenses.filter(e => e.category === 'Personal').reduce((s, e) => s + Number(e.amount), 0);
-        const professional = expenses.filter(e => e.category === 'Professional').reduce((s, e) => s + Number(e.amount), 0);
+        const monthExp = expenses.filter(e => {
+            const d = new Date(e.date);
+            return d.getMonth() === now.getMonth() &&
+                d.getFullYear() === now.getFullYear();
+        });
+
+        const personal = monthExp
+            .filter(e => e.category === "Personal")
+            .reduce((s, e) => s + Number(e.amount), 0);
+
+        const professional = monthExp
+            .filter(e => e.category === "Professional")
+            .reduce((s, e) => s + Number(e.amount), 0);
+
         const total = personal + professional;
 
-        document.getElementById("doughnutCenter").innerHTML = `
-            <div class="dc-total">Rs ${total.toLocaleString()}</div>
-            <div class="dc-label">Total</div>
-        `;
+        document.getElementById("doughnutCenter").innerHTML = total > 0
+            ? `<div class="dc-total">${fmt(total)}</div><div class="dc-label">This Month</div>`
+            : `<div class="dc-label" style="font-size:0.8rem;">No data</div>`;
 
         const ctx = document.getElementById("doughnutChart").getContext("2d");
         if (doughnutChart) doughnutChart.destroy();
+        if (total === 0) return;
 
         doughnutChart = new Chart(ctx, {
             type: "doughnut",
@@ -144,52 +777,58 @@
                 labels: ["Personal", "Professional"],
                 datasets: [{
                     data: [personal, professional],
-                    backgroundColor: ["#4da6ff", "#ff6b6b"],
-                    borderColor: ["#1a1a1a", "#1a1a1a"],
-                    borderWidth: 4,
-                    hoverOffset: 10
+                    backgroundColor: ["rgba(77,166,255,0.85)", "rgba(244,114,182,0.85)"],
+                    borderColor: ["rgba(77,166,255,0.3)", "rgba(244,114,182,0.3)"],
+                    borderWidth: 2,
+                    hoverOffset: 10,
                 }]
             },
             options: {
                 responsive: true,
-                cutout: '70%',
+                maintainAspectRatio: false,
+                cutout: "65%",
                 plugins: {
                     legend: {
-                        position: 'bottom',
-                        labels: { color: '#b0b0b0', padding: 20, font: { size: 13 } }
+                        position: "bottom",
+                        labels: {
+                            color: "#a0a8c0", padding: 16,
+                            font: { size: 12 }, usePointStyle: true, pointStyle: "circle",
+                        }
                     },
                     tooltip: {
-                        callbacks: {
-                            label: ctx => ` Rs ${Number(ctx.raw).toLocaleString()}`
-                        }
+                        backgroundColor: "rgba(13,13,26,0.9)",
+                        borderColor: "rgba(255,255,255,0.1)", borderWidth: 1,
+                        callbacks: { label: ctx => ` ${ctx.label}: ${fmt(ctx.raw)} (${pct(ctx.raw, total)})` }
                     }
                 }
             }
         });
     }
 
-    // BAR CHART (last 6 months) 
+    // ─────────────────────────────────────────────
+    // BAR CHART
+    // ─────────────────────────────────────────────
     function renderBar(expenses) {
-        const months = [];
         const labels = [];
+        const months = [];
 
         for (let i = 5; i >= 0; i--) {
             const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            months.push({ month: d.getMonth(), year: d.getFullYear() });
-            labels.push(d.toLocaleDateString('en-PK', { month: 'short', year: '2-digit' }));
+            labels.push(d.toLocaleDateString("en-PK", { month: "short", year: "2-digit" }));
+            months.push({ m: d.getMonth(), y: d.getFullYear() });
         }
 
-        const personalData = months.map(m =>
+        const personalData = months.map(x =>
             expenses.filter(e => {
                 const d = new Date(e.date);
-                return e.category === 'Personal' && d.getMonth() === m.month && d.getFullYear() === m.year;
+                return e.category === "Personal" && d.getMonth() === x.m && d.getFullYear() === x.y;
             }).reduce((s, e) => s + Number(e.amount), 0)
         );
 
-        const professionalData = months.map(m =>
+        const professionalData = months.map(x =>
             expenses.filter(e => {
                 const d = new Date(e.date);
-                return e.category === 'Professional' && d.getMonth() === m.month && d.getFullYear() === m.year;
+                return e.category === "Professional" && d.getMonth() === x.m && d.getFullYear() === x.y;
             }).reduce((s, e) => s + Number(e.amount), 0)
         );
 
@@ -197,123 +836,426 @@
         if (barChart) barChart.destroy();
 
         barChart = new Chart(ctx, {
-            type: 'bar',
+            type: "bar",
             data: {
                 labels,
                 datasets: [
                     {
-                        label: 'Personal',
+                        label: "Personal",
                         data: personalData,
-                        backgroundColor: 'rgba(77, 166, 255, 0.7)',
-                        borderColor: '#4da6ff',
-                        borderWidth: 1,
-                        borderRadius: 6,
+                        backgroundColor: "rgba(77,166,255,0.7)",
+                        borderColor: "rgba(77,166,255,0.9)",
+                        borderWidth: 1, borderRadius: 6, borderSkipped: false,
                     },
                     {
-                        label: 'Professional',
+                        label: "Professional",
                         data: professionalData,
-                        backgroundColor: 'rgba(255, 107, 107, 0.7)',
-                        borderColor: '#ff6b6b',
-                        borderWidth: 1,
-                        borderRadius: 6,
+                        backgroundColor: "rgba(244,114,182,0.7)",
+                        borderColor: "rgba(244,114,182,0.9)",
+                        borderWidth: 1, borderRadius: 6, borderSkipped: false,
                     }
                 ]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: "index", intersect: false },
                 plugins: {
                     legend: {
-                        labels: { color: '#b0b0b0', font: { size: 13 } }
+                        position: "bottom",
+                        labels: {
+                            color: "#a0a8c0", padding: 16,
+                            font: { size: 12 }, usePointStyle: true, pointStyle: "circle",
+                        }
                     },
                     tooltip: {
-                        callbacks: {
-                            label: ctx => ` Rs ${Number(ctx.raw).toLocaleString()}`
-                        }
+                        backgroundColor: "rgba(13,13,26,0.9)",
+                        borderColor: "rgba(255,255,255,0.1)", borderWidth: 1,
+                        callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.raw)}` }
                     }
                 },
                 scales: {
-                    x: { ticks: { color: '#b0b0b0' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                    y: { ticks: { color: '#b0b0b0', callback: v => `Rs ${v}` }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    x: {
+                        stacked: false,
+                        grid: { color: "rgba(255,255,255,0.04)" },
+                        ticks: { color: "#a0a8c0", font: { size: 11 } },
+                        border: { color: "rgba(255,255,255,0.08)" }
+                    },
+                    y: {
+                        grid: { color: "rgba(255,255,255,0.04)" },
+                        ticks: {
+                            color: "#a0a8c0", font: { size: 11 },
+                            callback: v => v >= 1000 ? "Rs " + (v / 1000).toFixed(0) + "k" : "Rs " + v
+                        },
+                        border: { color: "rgba(255,255,255,0.08)" }
+                    }
                 }
             }
         });
     }
 
+    // ─────────────────────────────────────────────
+    // PAYMENT BREAKDOWN
+    // ─────────────────────────────────────────────
+    function renderPayments(expenses) {
+        const methods = {
+            cash: "💵 Cash", card: "💳 Card",
+            easypaisa: "📱 Easypaisa", jazzcash: "📱 JazzCash",
+        };
 
-    // PAYMENT BREAKDOWN 
-    function renderPaymentBreakdown(expenses) {
-        const methods = { cash: '💵 Cash', card: '💳 Card', easypaisa: '📱 Easypaisa', jazzcash: '📱 JazzCash' };
         const total = expenses.reduce((s, e) => s + Number(e.amount), 0);
 
-        const breakdown = Object.entries(methods).map(([key, label]) => {
-            const amount = expenses.filter(e => e.payment_method === key).reduce((s, e) => s + Number(e.amount), 0);
-            const pct = total ? Math.round((amount / total) * 100) : 0;
-            return { label, amount, pct };
-        }).filter(b => b.amount > 0).sort((a, b) => b.amount - a.amount);
+        const rows = Object.entries(methods).map(([key, label]) => {
+            const amount = expenses
+                .filter(e => e.payment_method === key)
+                .reduce((s, e) => s + Number(e.amount), 0);
+            return { key, label, amount };
+        }).filter(r => r.amount > 0).sort((a, b) => b.amount - a.amount);
 
-        if (!breakdown.length) {
-            document.getElementById("paymentBreakdown").innerHTML = `<p class="chart-empty">No data yet</p>`;
+        if (!rows.length) {
+            document.getElementById("paymentBreakdown").innerHTML =
+                `<p style="color:var(--text-secondary);font-size:0.9rem;padding:1rem;">No payment data</p>`;
             return;
         }
 
-        document.getElementById("paymentBreakdown").innerHTML = breakdown.map(b => `
+        document.getElementById("paymentBreakdown").innerHTML = rows.map(r => {
+            const p = total ? Math.round((r.amount / total) * 100) : 0;
+            return `
             <div class="payment-row">
-                <div class="payment-row-label">${b.label}</div>
+                <div class="payment-row-label">${r.label}</div>
                 <div class="payment-bar-wrap">
-                    <div class="payment-bar-fill" style="width: ${b.pct}%"></div>
+                    <div class="payment-bar-fill" style="width:${p}%"></div>
                 </div>
-                <div class="payment-row-amount">Rs ${b.amount.toLocaleString()} <span class="payment-pct">${b.pct}%</span></div>
-            </div>
-        `).join('');
+                <div class="payment-row-amount">
+                    ${fmt(r.amount)}
+                    <span class="payment-pct">${p}%</span>
+                </div>
+            </div>`;
+        }).join("");
     }
-    async function loadInsights() {
-            const card = document.getElementById("aiInsightsCard");
-            try {
-                const res = await fetch("/insights/");
-                if (!res.ok) throw new Error();
-                const data = await res.json();
-                const insight = data.data || data;
 
-                card.innerHTML = `
-            <div class="ai-insights-inner">
+    // ─────────────────────────────────────────────
+    // AI INSIGHTS
+    // ─────────────────────────────────────────────
+    async function loadInsights() {
+        const card = document.getElementById("aiInsightsCard");
+
+        try {
+            const res = await fetch("/insights/");
+            const json = await res.json();
+            const d = json.data;
+
+            const hasSavingsRate = d.savings_rate !== null && d.savings_rate !== undefined;
+            const trendIcon = d.trend === "increasing" ? "📈" : d.trend === "decreasing" ? "📉" : "➡️";
+            const trendColor = d.trend === "increasing" ? "#ff5e72" : d.trend === "decreasing" ? "#43e097" : "#a78bfa";
+
+            card.innerHTML = `
                 <div class="ai-insights-header">
-                    <span class="ai-badge">🤖 Llama 3 · Powered by Groq</span>
+                    <span class="ai-badge">🧠 AI Financial Intelligence</span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:1.5rem;">
+                    <div style="background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:12px; padding:1rem; text-align:center;">
+                        <div style="font-size:1.5rem;">${trendIcon}</div>
+                        <div style="font-size:1.1rem; font-weight:700; color:${trendColor}; margin:0.25rem 0;">${d.trend.charAt(0).toUpperCase() + d.trend.slice(1)}</div>
+                        <div style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.06em;">Spending Trend</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:12px; padding:1rem; text-align:center;">
+                        <div style="font-size:1.5rem;">🔮</div>
+                        <div style="font-size:1rem; font-weight:700; color:#fff; margin:0.25rem 0;">Rs ${Number(d.predicted_next).toLocaleString()}</div>
+                        <div style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.06em;">Next Month Forecast</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:12px; padding:1rem; text-align:center;">
+                        <div style="font-size:1.5rem;">💡</div>
+                        <div style="font-size:1rem; font-weight:700; color:#43e097; margin:0.25rem 0;">Rs ${Number(d.savings_potential).toLocaleString()}</div>
+                        <div style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.06em;">Savings Potential</div>
+                    </div>
+                    ${hasSavingsRate ? `
+                    <div style="background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:12px; padding:1rem; text-align:center;">
+                        <div style="font-size:1.5rem;">${d.savings_rate >= 20 ? "🟢" : d.savings_rate >= 10 ? "🟡" : "🔴"}</div>
+                        <div style="font-size:1.1rem; font-weight:700; color:${d.savings_rate >= 20 ? "#43e097" : d.savings_rate >= 10 ? "#f59e0b" : "#ff5e72"}; margin:0.25rem 0;">${d.savings_rate}%</div>
+                        <div style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.06em;">Savings Rate</div>
+                    </div>` : ""}
                 </div>
                 <div class="ai-insights-body">
-                    <div class="ai-section">
-                        <div class="ai-section-label">📊 Monthly Summary</div>
-                        <p>${insight.summary}</p>
+                    <div>
+                        <div class="ai-section-label">📊 Behavior Analysis</div>
+                        <p>${d.summary}</p>
                     </div>
-                    ${insight.forecast ? `
-                    <div class="ai-section">
-                        <div class="ai-section-label">🔮 Forecast</div>
-                        <p>${insight.forecast}</p>
-                    </div>` : ''}
-                </div>
-            </div>
-        `;
-            } catch {
-                card.innerHTML = `<div class="ai-insights-inner"><p class="ai-error">⚠️ Could not load AI insights.</p></div>`;
+                    <div>
+                        <div class="ai-section-label">🔭 Forecast & Advice</div>
+                        <p>${d.forecast}</p>
+                    </div>
+                </div>`;
+
+        } catch (e) {
+            card.innerHTML = `
+                <div class="ai-error">
+                    ⚠️ AI insights unavailable right now. Please try again shortly.
+                </div>`;
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // INCOME MODAL — upgraded
+    // ─────────────────────────────────────────────
+    const incomeModal = document.getElementById("incomeModal");
+    const amountInput = document.getElementById("incomeInput");
+    const dateInput = document.getElementById("incomeDateInput");
+    const saveBtn = document.getElementById("saveIncomeBtn");
+    const amountMsg = document.getElementById("amountMsg");
+    const dateMsg = document.getElementById("dateMsg");
+    const preview = document.getElementById("incomePreview");
+    const previewVal = document.getElementById("incomePreviewVal");
+
+    // Tab switching
+    document.querySelectorAll(".income-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+            document.querySelectorAll(".income-tab").forEach(t => t.classList.remove("active"));
+            document.querySelectorAll(".income-panel").forEach(p => p.classList.remove("active"));
+            tab.classList.add("active");
+            const panelId = "tab" + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1);
+            document.getElementById(panelId).classList.add("active");
+            if (tab.dataset.tab === "history") loadHistory();
+        });
+    });
+
+    // Live validation
+    let amountOk = false, dateOk = false;
+
+    function validateAmount() {
+        const val = parseFloat(amountInput.value);
+        if (!amountInput.value) {
+            amountMsg.textContent = "";
+            amountMsg.className = "income-field-msg";
+            amountInput.className = "income-input";
+            preview.classList.remove("visible");
+            amountOk = false;
+        } else if (isNaN(val) || val <= 0) {
+            amountMsg.textContent = "⚠ Amount must be a positive number";
+            amountMsg.className = "income-field-msg";
+            amountInput.className = "income-input error";
+            preview.classList.remove("visible");
+            amountOk = false;
+        } else if (val > 99999999) {
+            amountMsg.textContent = "⚠ Amount seems too high";
+            amountMsg.className = "income-field-msg";
+            amountInput.className = "income-input error";
+            preview.classList.remove("visible");
+            amountOk = false;
+        } else {
+            amountMsg.textContent = "✓ Looks good";
+            amountMsg.className = "income-field-msg ok";
+            amountInput.className = "income-input valid";
+            previewVal.textContent = fmt(val);
+            preview.classList.add("visible");
+            amountOk = true;
+        }
+        updateSaveBtn();
+    }
+
+    function validateDate() {
+        const val = dateInput.value;
+        if (!val) {
+            dateMsg.textContent = "";
+            dateMsg.className = "income-field-msg";
+            dateInput.className = "income-input income-input-no-prefix";
+            dateOk = false;
+        } else {
+            const selected = new Date(val);
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+            if (selected > today) {
+                dateMsg.textContent = "⚠ Future dates not allowed";
+                dateMsg.className = "income-field-msg";
+                dateInput.className = "income-input income-input-no-prefix error";
+                dateOk = false;
+            } else {
+                dateMsg.textContent = "✓ Looks good";
+                dateMsg.className = "income-field-msg ok";
+                dateInput.className = "income-input income-input-no-prefix valid";
+                dateOk = true;
             }
         }
+        updateSaveBtn();
+    }
 
-    async function loadDashboard() {
-            try {
-                const res = await fetch("/expenses/");
-                const json = await res.json();
-                const expenses = json.data || json; // ← fix here
+    function updateSaveBtn() {
+        saveBtn.disabled = !(amountOk && dateOk);
+    }
 
-                renderStats(expenses);
-                renderDoughnut(expenses);
-                renderBar(expenses);
-                renderPaymentBreakdown(expenses);
-            } catch {
-                console.error("Dashboard load failed");
+    amountInput.addEventListener("input", validateAmount);
+    dateInput.addEventListener("change", validateDate);
+
+    // Open modal
+    document.getElementById("openIncomeModal").addEventListener("click", async () => {
+        // Reset to Update tab
+        document.querySelectorAll(".income-tab").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(".income-panel").forEach(p => p.classList.remove("active"));
+        document.querySelector('[data-tab="update"]').classList.add("active");
+        document.getElementById("tabUpdate").classList.add("active");
+
+        // Reset validation UI
+        amountMsg.textContent = "";
+        amountMsg.className = "income-field-msg";
+        dateMsg.textContent = "";
+        dateMsg.className = "income-field-msg";
+        amountInput.className = "income-input";
+        dateInput.className = "income-input income-input-no-prefix";
+        preview.classList.remove("visible");
+        amountOk = false; dateOk = false;
+        saveBtn.disabled = true;
+
+        // Pre-fill existing income
+        try {
+            const res = await fetch("/income/");
+            const json = await res.json();
+            if (json.data) {
+                amountInput.value = json.data.amount;
+                dateInput.value = json.data.effective_from;
+                validateAmount();
+                validateDate();
+            } else {
+                amountInput.value = "";
+                dateInput.value = new Date().toISOString().split("T")[0];
+                validateDate();
             }
-            loadInsights();
+        } catch {
+            dateInput.value = new Date().toISOString().split("T")[0];
+            validateDate();
         }
 
-    loadDashboard();
-    
+        historyLoaded = false; // allow fresh load next time History tab is opened
+        incomeModal.style.display = "flex";
+    });
+
+    // Close modal
+    function closeIncomeModal() {
+        incomeModal.style.display = "none";
+    }
+
+    document.getElementById("closeIncomeModal").addEventListener("click", closeIncomeModal);
+    document.getElementById("cancelIncomeBtn").addEventListener("click", closeIncomeModal);
+    incomeModal.addEventListener("click", e => {
+        if (e.target === incomeModal) closeIncomeModal();
+    });
+
+    // Save income
+    saveBtn.addEventListener("click", async () => {
+        if (!amountOk || !dateOk) return;
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving…";
+
+        try {
+            const res = await fetch("/income/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    amount: amountInput.value,
+                    effective_from: dateInput.value,
+                }),
+            });
+
+            if (res.ok) {
+                // Success flash
+                document.getElementById("tabUpdate").innerHTML = `
+                    <div class="income-success-flash">
+                        <div class="income-success-icon">✅</div>
+                        <div class="income-success-title">Income Saved!</div>
+                        <div class="income-success-sub">${fmt(amountInput.value)} effective from ${dateInput.value}</div>
+                    </div>`;
+
+                await loadFinance(); // refresh budget card immediately
+                setTimeout(closeIncomeModal, 1600);
+            } else {
+                const err = await res.json();
+                amountMsg.textContent = "⚠ " + (err.error || "Failed to save. Try again.");
+                amountMsg.className = "income-field-msg";
+                saveBtn.disabled = false;
+                saveBtn.textContent = "Save Income";
+            }
+        } catch {
+            amountMsg.textContent = "⚠ Server error. Please try again.";
+            amountMsg.className = "income-field-msg";
+            saveBtn.disabled = false;
+            saveBtn.textContent = "Save Income";
+        }
+    });
+
+    // History tab
+    let historyLoaded = false;
+
+    async function loadHistory() {
+        if (historyLoaded) return;
+
+        const container = document.getElementById("incomeHistoryContent");
+        container.innerHTML = `
+            <div class="income-history-loading">
+                <div class="income-spinner-sm"></div>
+                <span>Loading history...</span>
+            </div>`;
+
+        try {
+            const res = await fetch("/income/history/");
+            const json = await res.json();
+            const data = json.data || [];
+
+            if (!data.length) {
+                container.innerHTML = `
+                    <div class="income-history-empty">
+                        <div style="font-size:2rem; margin-bottom:0.5rem;">📭</div>
+                        No income records yet.<br>
+                        <span style="font-size:0.75rem;">Add your first income to start tracking.</span>
+                    </div>`;
+            } else {
+                container.innerHTML = `
+                    <div class="income-history-list">
+                        ${data.map((r, i) => `
+                            <div class="income-history-item">
+                                <div class="income-history-left">
+                                    <div class="income-history-amount">${fmt(r.amount)}</div>
+                                    <div class="income-history-date">Effective from ${r.effective_from}</div>
+                                    ${r.created_at
+                        ? `<div class="income-history-date" style="font-size:0.7rem;opacity:0.6;">Recorded ${r.created_at}</div>`
+                        : ""}
+                                </div>
+                                ${i === 0 ? '<span class="income-history-badge">Current</span>' : ""}
+                            </div>
+                        `).join("")}
+                    </div>`;
+                historyLoaded = true;
+            }
+        } catch {
+            container.innerHTML = `
+                <div class="income-history-empty">⚠️ Failed to load history.</div>`;
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────
+    async function initDashboard() {
+        try {
+            const [expRes] = await Promise.all([
+                fetch("/expenses/"),
+                loadFinance(),
+            ]);
+
+            const expJson = await expRes.json();
+            const expenses = expJson.data || [];
+
+            renderStats(expenses);
+            renderDoughnut(expenses);
+            renderBar(expenses);
+            renderPayments(expenses);
+
+        } catch (e) {
+            console.error("Dashboard load error:", e);
+        }
+
+        loadInsights();
+    }
+
+    initDashboard();
 </script>
 {% endblock %}

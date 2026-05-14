@@ -177,6 +177,7 @@ h2 {
     border-color: rgba(255, 94, 114, 0.3);
 }
 
+
 /* ===== FORM ELEMENTS ===== */
 .form-grid {
     display: grid;
@@ -1313,3 +1314,36 @@ tbody tr:last-child {
         grid-template-columns: 1fr;
     }
 }
+
+.ai-insights-card {
+    background: linear-gradient(135deg, #121826, #1f2937);
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 2rem;
+    color: white;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.ai-header {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.ai-section {
+    margin-bottom: 0.7rem;
+    color: #d1d5db;
+}
+
+.ai-summary,
+.ai-forecast {
+    margin-top: 1rem;
+    line-height: 1.7;
+    color: #f3f4f6;
+}
+
+.ai-forecast {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 1rem;
+}
+
