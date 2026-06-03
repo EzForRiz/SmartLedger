@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Join ROSCA — Smart Ledger{% endblock %}
+{% block nav_rosca %}active{% endblock %}
+
+{% block content %}
+<div class="container rosca-form-page">
+
+    <div class="page-header">
+        <div>
+            <h1>Join a ROSCA Pool</h1>
+            <p class="page-subtitle">Register for an active committee and start contributing monthly.</p>
+        </div>
+        <a href="{% url 'rosca_index' %}" class="btn">← Back to ROSCA</a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="message message-{{ message.tags|default:'success' }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="rosca-form-card">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="message message-error">{{ form.non_field_errors.0 }}</div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="{{ form.full_name.id_for_label }}">Full Name</label>
+                {{ form.full_name }}
+                {% if form.full_name.errors %}
+                <span class="field-error">{{ form.full_name.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+                {{ form.phone_number }}
+                {% if form.phone_number.errors %}
+                <span class="field-error">{{ form.phone_number.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.cnic.id_for_label }}">CNIC</label>
+                {{ form.cnic }}
+                {% if form.cnic.errors %}
+                <span class="field-error">{{ form.cnic.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.group.id_for_label }}">ROSCA Pool</label>
+                {{ form.group }}
+                <span class="field-hint">Your monthly contribution is set by the pool you select.</span>
+                {% if form.group.errors %}
+                <span class="field-error">{{ form.group.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-submit rosca-submit-btn">Join Committee</button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const input = document.querySelector(".cnic-auto-format");
+    if (!input) return;
+
+    function formatCnic(value) {
+        const digits = value.replace(/\D/g, "").slice(0, 13);
+        let out = digits.slice(0, 5);
+        if (digits.length > 5) out += "-" + digits.slice(5, 12);
+        if (digits.length > 12) out += "-" + digits.slice(12, 13);
+        return out;
+    }
+
+    input.addEventListener("input", function () {
+        const start = input.selectionStart;
+        const digitsBefore = input.value.slice(0, start).replace(/\D/g, "").length;
+        input.value = formatCnic(input.value);
+
+        let pos = 0;
+        let seen = 0;
+        while (pos < input.value.length && seen < digitsBefore) {
+            if (/\d/.test(input.value[pos])) seen++;
+            pos++;
+        }
+        input.setSelectionRange(pos, pos);
+    });
+
+    input.addEventListener("keydown", function (e) {
+        if (e.key.length === 1 && !/\d/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+        }
+    });
+})();
+</script>
+{% endblock %}

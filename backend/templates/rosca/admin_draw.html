@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}ROSCA Admin Draw — Smart Ledger{% endblock %}
+{% block nav_rosca %}active{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <div class="page-header">
+        <div>
+            <h1>Monthly Lucky Draw</h1>
+            <p class="page-subtitle">Admin-only — trigger the payout draw for {{ current_month }}/{{ current_year }}</p>
+        </div>
+        <a href="{% url 'rosca_index' %}" class="btn">← ROSCA Home</a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="message message-{{ message.tags|default:'success' }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="rosca-form-card">
+        <h3 style="margin-bottom:1rem;">Run Draw</h3>
+        <p class="field-hint" style="margin-bottom:1.25rem;">
+            Only participants with a successful payment for this month who have not won
+            a previous draw in this cycle will be included.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="group_id">Select ROSCA Pool</label>
+                <select name="group_id" id="group_id" required class="rosca-input">
+                    <option value="">— Choose a pool —</option>
+                    {% for group in groups %}
+                    <option value="{{ group.id }}">{{ group.name }} ({{ group.participants.count }} members)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-submit">🎲 Run Lucky Draw</button>
+        </form>
+    </div>
+
+    {% if recent_winners %}
+    <div class="table-card" style="margin-top:2rem;">
+        <div class="table-header">
+            <h3>Latest Winner</h3>
+        </div>
+        <div class="table-container" style="padding:1.25rem 1.5rem;">
+            <p>
+                <strong>{{ recent_winners.participant.full_name }}</strong>
+                won <strong>Rs. {{ recent_winners.prize_amount|floatformat:0 }}</strong>
+                in {{ recent_winners.group.name }}
+                ({{ recent_winners.month }}/{{ recent_winners.year }})
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

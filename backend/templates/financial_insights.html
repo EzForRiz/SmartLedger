@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Financial Insights — Smart Ledger{% endblock %}
+{% block nav_insights %}active{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <div class="page-header">
+        <div>
+            <h1>AI Financial Insights</h1>
+            <p class="page-subtitle">Smart analysis across income, expenses &amp; ROSCA for {{ metrics.period_label }}</p>
+        </div>
+    </div>
+
+    <!-- Month / Year picker -->
+    <form method="get" class="insights-picker glass">
+        <label>View period</label>
+        <div class="insights-picker-row">
+            <select name="month" id="month" class="rosca-input" aria-label="Month">
+                {% for num, name in months %}
+                <option value="{{ num }}" {% if num == selected_month %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+            <select name="year" id="year" class="rosca-input" aria-label="Year">
+                {% for y in years %}
+                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-submit">Apply</button>
+        </div>
+    </form>
+
+    <!-- Metric cards -->
+    <div class="stats-container insights-metrics">
+        <div class="stat-card" style="border-top: 2px solid #43e097;">
+            <div class="stat-label">💰 Total Income</div>
+            <div class="stat-value insights-income">Rs. {{ metrics.total_income|floatformat:0 }}</div>
+            <div class="stat-sub">
+                {% if metrics.rosca_payout > 0 %}
+                Includes Rs. {{ metrics.rosca_payout|floatformat:0 }} ROSCA payout
+                {% else %}
+                Salary &amp; recorded income
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="stat-card" style="border-top: 2px solid #ff5e72;">
+            <div class="stat-label">📤 Expenses &amp; Dues</div>
+            <div class="stat-value insights-outflow">Rs. {{ metrics.total_outflows|floatformat:0 }}</div>
+            <div class="stat-sub">
+                Expenses Rs. {{ metrics.total_expenses|floatformat:0 }}
+                {% if metrics.rosca_contributions > 0 %}
+                · ROSCA Rs. {{ metrics.rosca_contributions|floatformat:0 }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="stat-card" style="border-top: 2px solid #a78bfa;">
+            <div class="stat-label">✨ Free Cash</div>
+            <div class="stat-value {% if metrics.discretionary_income < 0 %}insights-deficit{% else %}insights-free{% endif %}">
+                Rs. {{ metrics.discretionary_income|floatformat:0 }}
+            </div>
+            <div class="stat-sub">Savings rate: {{ metrics.savings_rate }}%</div>
+        </div>
+    </div>
+
+    <!-- Category breakdown -->
+    {% if metrics.expenses_by_category %}
+    <div class="insights-breakdown glass">
+        <h3>Expense Breakdown</h3>
+        <div class="insights-category-list">
+            {% for row in metrics.expenses_by_category %}
+            <div class="insights-category-row">
+                <span>{{ row.category }}</span>
+                <span>Rs. {{ row.total|floatformat:0 }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Insights feed -->
+    <div class="insights-feed">
+        <h2 class="insights-feed-title">Smart Recommendations</h2>
+
+        {% for item in insights %}
+        <div class="insight-alert insight-{{ item.type }}">
+            <span class="insight-icon">
+                {% if item.type == 'danger' %}🔴
+                {% elif item.type == 'warning' %}🟡
+                {% elif item.type == 'success' %}🟢
+                {% else %}ℹ️{% endif %}
+            </span>
+            <p>{{ item.message }}</p>
+        </div>
+        {% empty %}
+        <div class="insight-alert insight-info">
+            <span class="insight-icon">ℹ️</span>
+            <p>No insights available for this period.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

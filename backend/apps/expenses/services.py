@@ -6,20 +6,21 @@ from .models import Expense, IncomeHistory
 
 def get_income_for_month(user, month_date):
     """
-    Returns active income for given month.
+    Returns total income for the given calendar month
+    (sum of all entries whose effective_from falls in that month).
     """
 
-    income = (
+    total = (
         IncomeHistory.objects
         .filter(
             user=user,
-            effective_from__lte=month_date
+            effective_from__year=month_date.year,
+            effective_from__month=month_date.month,
         )
-        .order_by("-effective_from")
-        .first()
+        .aggregate(total=Sum("amount"))["total"]
     )
 
-    return float(income.amount) if income else 0
+    return float(total) if total else 0
 
 
 def get_monthly_finance(user, month_date):

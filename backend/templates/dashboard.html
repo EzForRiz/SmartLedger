@@ -370,11 +370,22 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 0.75rem;
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.07);
         border-radius: 12px;
         padding: 0.8rem 1rem;
         transition: background 0.2s;
+    }
+
+    .income-history-actions {
+        flex-shrink: 0;
+    }
+
+    .income-history-actions .edit-btn,
+    .income-history-actions .delete-btn {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.75rem;
     }
 
     .income-history-item:first-child {
@@ -459,6 +470,8 @@
 {% block content %}
 <div class="container">
 
+    {% include "rosca/partials/winner_banner.html" %}
+
     <!-- PAGE HEADER -->
     <div class="page-header">
         <div>
@@ -468,10 +481,12 @@
         <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.5rem;">
             <div id="dashDate" class="dash-date"></div>
             <button id="openIncomeModal" class="btn btn-submit" style="font-size:0.85rem; padding:0.5rem 1.2rem;">
-                💰 Update Income
+                💰 Manage Income
             </button>
         </div>
     </div>
+
+    <div id="incomeMessage"></div>
 
     <!-- STAT CARDS -->
     <div class="stats-container">
@@ -577,12 +592,12 @@
 
         <!-- Tabs -->
         <div class="income-tabs">
-            <button class="income-tab active" data-tab="update">Update</button>
+            <button class="income-tab active" data-tab="add">Add</button>
             <button class="income-tab" data-tab="history">History</button>
         </div>
 
-        <!-- Tab: Update -->
-        <div class="income-panel active" id="tabUpdate">
+        <!-- Tab: Add -->
+        <div class="income-panel active" id="tabAdd">
 
             <!-- Live preview -->
             <div class="income-preview" id="incomePreview">
@@ -613,7 +628,7 @@
             <!-- Footer -->
             <div class="income-modal-footer">
                 <button class="income-btn-cancel" id="cancelIncomeBtn">Cancel</button>
-                <button class="income-btn-save" id="saveIncomeBtn" disabled>Save Income</button>
+                <button class="income-btn-save" id="saveIncomeBtn" disabled>Add Income</button>
             </div>
         </div>
 
@@ -627,6 +642,30 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+<!-- Edit Income Modal (matches expense edit modal style) -->
+<div id="editIncomeModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Edit Income</h3>
+            <button class="modal-close" id="editIncomeModalClose">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Amount (Rs)</label>
+                <input type="number" id="editIncomeAmount" required min="1" step="any">
+            </div>
+            <div class="form-group">
+                <label>Effective From</label>
+                <input type="date" id="editIncomeDate" required>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" id="editIncomeCancelBtn">Cancel</button>
+            <button class="btn btn-submit" id="editIncomeSaveBtn">Save Changes</button>
+        </div>
     </div>
 </div>
 
@@ -654,6 +693,20 @@
     // ─────────────────────────────────────────────
     function fmt(n) {
         return "Rs " + Number(n).toLocaleString();
+    }
+
+    function formatRecordedAt(isoString) {
+        if (!isoString) return "";
+        const d = new Date(isoString);
+        if (isNaN(d.getTime())) return isoString;
+        return d.toLocaleString(undefined, {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+        });
     }
 
     function pct(part, total) {
@@ -716,7 +769,7 @@
             document.getElementById("statIncome").textContent =
                 income > 0 ? fmt(income) : "Not set";
             document.getElementById("incomeStatus").textContent =
-                income > 0 ? "Monthly salary" : "Tap 'Update Income' to set";
+                income > 0 ? "This month's total" : "Tap 'Manage Income' to add";
 
             document.getElementById("budgetRemaining").textContent =
                 income > 0 ? fmt(remaining) : "—";
@@ -996,7 +1049,7 @@
     }
 
     // ─────────────────────────────────────────────
-    // INCOME MODAL — upgraded
+    // INCOME MODAL — full CRUD
     // ─────────────────────────────────────────────
     const incomeModal = document.getElementById("incomeModal");
     const amountInput = document.getElementById("incomeInput");
@@ -1006,6 +1059,40 @@
     const dateMsg = document.getElementById("dateMsg");
     const preview = document.getElementById("incomePreview");
     const previewVal = document.getElementById("incomePreviewVal");
+    const incomeMessageDiv = document.getElementById("incomeMessage");
+    const editIncomeModal = document.getElementById("editIncomeModal");
+
+    let amountOk = false, dateOk = false;
+    let historyLoaded = false;
+    let allIncomeRecords = [];
+    let currentEditIncomeId = null;
+
+    function showIncomeMessage(msg, type = "success") {
+        incomeMessageDiv.className = `message message-${type}`;
+        incomeMessageDiv.textContent = msg;
+        clearTimeout(incomeMessageDiv._timer);
+        incomeMessageDiv._timer = setTimeout(() => {
+            incomeMessageDiv.textContent = "";
+            incomeMessageDiv.className = "";
+        }, 3000);
+    }
+
+    function resetAddForm() {
+        amountInput.value = "";
+        dateInput.value = new Date().toISOString().split("T")[0];
+        amountMsg.textContent = "";
+        amountMsg.className = "income-field-msg";
+        dateMsg.textContent = "";
+        dateMsg.className = "income-field-msg";
+        amountInput.className = "income-input";
+        dateInput.className = "income-input income-input-no-prefix";
+        preview.classList.remove("visible");
+        amountOk = false;
+        dateOk = false;
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Add Income";
+        validateDate();
+    }
 
     // Tab switching
     document.querySelectorAll(".income-tab").forEach(tab => {
@@ -1015,12 +1102,9 @@
             tab.classList.add("active");
             const panelId = "tab" + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1);
             document.getElementById(panelId).classList.add("active");
-            if (tab.dataset.tab === "history") loadHistory();
+            if (tab.dataset.tab === "history") loadHistory(true);
         });
     });
-
-    // Live validation
-    let amountOk = false, dateOk = false;
 
     function validateAmount() {
         const val = parseFloat(amountInput.value);
@@ -1086,49 +1170,17 @@
     amountInput.addEventListener("input", validateAmount);
     dateInput.addEventListener("change", validateDate);
 
-    // Open modal
-    document.getElementById("openIncomeModal").addEventListener("click", async () => {
-        // Reset to Update tab
+    // Open modal — blank Add form (multiple entries per month allowed)
+    document.getElementById("openIncomeModal").addEventListener("click", () => {
         document.querySelectorAll(".income-tab").forEach(t => t.classList.remove("active"));
         document.querySelectorAll(".income-panel").forEach(p => p.classList.remove("active"));
-        document.querySelector('[data-tab="update"]').classList.add("active");
-        document.getElementById("tabUpdate").classList.add("active");
-
-        // Reset validation UI
-        amountMsg.textContent = "";
-        amountMsg.className = "income-field-msg";
-        dateMsg.textContent = "";
-        dateMsg.className = "income-field-msg";
-        amountInput.className = "income-input";
-        dateInput.className = "income-input income-input-no-prefix";
-        preview.classList.remove("visible");
-        amountOk = false; dateOk = false;
-        saveBtn.disabled = true;
-
-        // Pre-fill existing income
-        try {
-            const res = await fetch("/income/");
-            const json = await res.json();
-            if (json.data) {
-                amountInput.value = json.data.amount;
-                dateInput.value = json.data.effective_from;
-                validateAmount();
-                validateDate();
-            } else {
-                amountInput.value = "";
-                dateInput.value = new Date().toISOString().split("T")[0];
-                validateDate();
-            }
-        } catch {
-            dateInput.value = new Date().toISOString().split("T")[0];
-            validateDate();
-        }
-
-        historyLoaded = false; // allow fresh load next time History tab is opened
+        document.querySelector('[data-tab="add"]').classList.add("active");
+        document.getElementById("tabAdd").classList.add("active");
+        resetAddForm();
+        historyLoaded = false;
         incomeModal.style.display = "flex";
     });
 
-    // Close modal
     function closeIncomeModal() {
         incomeModal.style.display = "none";
     }
@@ -1139,12 +1191,12 @@
         if (e.target === incomeModal) closeIncomeModal();
     });
 
-    // Save income
+    // Add income
     saveBtn.addEventListener("click", async () => {
         if (!amountOk || !dateOk) return;
 
         saveBtn.disabled = true;
-        saveBtn.textContent = "Saving…";
+        saveBtn.textContent = "Adding…";
 
         try {
             const res = await fetch("/income/", {
@@ -1156,37 +1208,29 @@
                 }),
             });
 
-            if (res.ok) {
-                // Success flash
-                document.getElementById("tabUpdate").innerHTML = `
-                    <div class="income-success-flash">
-                        <div class="income-success-icon">✅</div>
-                        <div class="income-success-title">Income Saved!</div>
-                        <div class="income-success-sub">${fmt(amountInput.value)} effective from ${dateInput.value}</div>
-                    </div>`;
+            const result = await res.json();
 
-                await loadFinance(); // refresh budget card immediately
-                setTimeout(closeIncomeModal, 1600);
+            if (res.ok) {
+                showIncomeMessage("✅ Income added!");
+                resetAddForm();
+                historyLoaded = false;
+                await loadFinance();
             } else {
-                const err = await res.json();
-                amountMsg.textContent = "⚠ " + (err.error || "Failed to save. Try again.");
+                amountMsg.textContent = "⚠ " + (result.error || "Failed to save. Try again.");
                 amountMsg.className = "income-field-msg";
-                saveBtn.disabled = false;
-                saveBtn.textContent = "Save Income";
+                saveBtn.disabled = !(amountOk && dateOk);
+                saveBtn.textContent = "Add Income";
             }
         } catch {
             amountMsg.textContent = "⚠ Server error. Please try again.";
             amountMsg.className = "income-field-msg";
-            saveBtn.disabled = false;
-            saveBtn.textContent = "Save Income";
+            saveBtn.disabled = !(amountOk && dateOk);
+            saveBtn.textContent = "Add Income";
         }
     });
 
-    // History tab
-    let historyLoaded = false;
-
-    async function loadHistory() {
-        if (historyLoaded) return;
+    async function loadHistory(force = false) {
+        if (historyLoaded && !force) return;
 
         const container = document.getElementById("incomeHistoryContent");
         container.innerHTML = `
@@ -1198,9 +1242,9 @@
         try {
             const res = await fetch("/income/history/");
             const json = await res.json();
-            const data = json.data || [];
+            allIncomeRecords = json.data || [];
 
-            if (!data.length) {
+            if (!allIncomeRecords.length) {
                 container.innerHTML = `
                     <div class="income-history-empty">
                         <div style="font-size:2rem; margin-bottom:0.5rem;">📭</div>
@@ -1210,26 +1254,109 @@
             } else {
                 container.innerHTML = `
                     <div class="income-history-list">
-                        ${data.map((r, i) => `
+                        ${allIncomeRecords.map(r => `
                             <div class="income-history-item">
                                 <div class="income-history-left">
                                     <div class="income-history-amount">${fmt(r.amount)}</div>
                                     <div class="income-history-date">Effective from ${r.effective_from}</div>
                                     ${r.created_at
-                        ? `<div class="income-history-date" style="font-size:0.7rem;opacity:0.6;">Recorded ${r.created_at}</div>`
+                        ? `<div class="income-history-date" style="font-size:0.7rem;opacity:0.6;">Recorded ${formatRecordedAt(r.created_at)}</div>`
                         : ""}
                                 </div>
-                                ${i === 0 ? '<span class="income-history-badge">Current</span>' : ""}
+                                <div class="income-history-actions action-cell">
+                                    <button class="edit-btn income-edit-btn" data-id="${r.id}">Edit</button>
+                                    <button class="delete-btn income-delete-btn" data-id="${r.id}">Delete</button>
+                                </div>
                             </div>
                         `).join("")}
                     </div>`;
-                historyLoaded = true;
             }
+            historyLoaded = true;
         } catch {
             container.innerHTML = `
                 <div class="income-history-empty">⚠️ Failed to load history.</div>`;
         }
     }
+
+    // History edit / delete actions
+    document.getElementById("incomeHistoryContent").addEventListener("click", async (e) => {
+        const id = e.target.dataset.id;
+        if (!id) return;
+
+        if (e.target.classList.contains("income-delete-btn")) {
+            const res = await fetch(`/income/${id}/`, { method: "DELETE" });
+            if (res.ok) {
+                showIncomeMessage("🗑️ Income deleted");
+                historyLoaded = false;
+                await loadHistory(true);
+                await loadFinance();
+            } else {
+                showIncomeMessage("Delete failed", "error");
+            }
+        }
+
+        if (e.target.classList.contains("income-edit-btn")) {
+            const record = allIncomeRecords.find(r => r.id == id);
+            if (record) openEditIncomeModal(record);
+        }
+    });
+
+    // Edit income modal
+    function openEditIncomeModal(record) {
+        currentEditIncomeId = record.id;
+        document.getElementById("editIncomeAmount").value = record.amount;
+        document.getElementById("editIncomeDate").value = record.effective_from;
+        editIncomeModal.style.display = "flex";
+    }
+
+    function closeEditIncomeModal() {
+        editIncomeModal.style.display = "none";
+        currentEditIncomeId = null;
+    }
+
+    document.getElementById("editIncomeModalClose").addEventListener("click", closeEditIncomeModal);
+    document.getElementById("editIncomeCancelBtn").addEventListener("click", closeEditIncomeModal);
+    editIncomeModal.addEventListener("click", e => {
+        if (e.target === editIncomeModal) closeEditIncomeModal();
+    });
+
+    document.getElementById("editIncomeSaveBtn").addEventListener("click", async () => {
+        if (!currentEditIncomeId) return;
+
+        const saveBtnEl = document.getElementById("editIncomeSaveBtn");
+        saveBtnEl.disabled = true;
+        saveBtnEl.textContent = "Saving...";
+
+        const data = {
+            amount: document.getElementById("editIncomeAmount").value,
+            effective_from: document.getElementById("editIncomeDate").value,
+        };
+
+        try {
+            const res = await fetch(`/income/${currentEditIncomeId}/`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+                showIncomeMessage("✅ Income updated!");
+                closeEditIncomeModal();
+                historyLoaded = false;
+                await loadHistory(true);
+                await loadFinance();
+            } else {
+                showIncomeMessage(result.error || "Update failed", "error");
+            }
+        } catch {
+            showIncomeMessage("Server error", "error");
+        } finally {
+            saveBtnEl.disabled = false;
+            saveBtnEl.textContent = "Save Changes";
+        }
+    });
 
     // ─────────────────────────────────────────────
     // INIT

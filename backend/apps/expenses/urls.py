@@ -1,6 +1,6 @@
 # apps/expenses/urls.py
 
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
@@ -9,7 +9,7 @@ urlpatterns = [
 
     path("dashboard/", views.dashboard),
 
-    path("rosca/", views.rosca),
+    path("rosca/", include("apps.rosca.urls")),
 
     path("login/", views.login_view),
 
@@ -25,8 +25,11 @@ urlpatterns = [
 
     path("insights/", views.insights),
 
+    path("financial-insights/", include("apps.ai_insights.urls")),
+
     path("income/", views.income_view),
-    path("income/history/",      views.income_history_view),
+    path("income/history/", views.income_history_view),
+    path("income/<int:id>/", views.income_detail),
 
     path("finance-summary/", views.finance_summary),
 ]

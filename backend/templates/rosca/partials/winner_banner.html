@@ -1,0 +1,14 @@
+{% if latest_winner %}
+<div class="winner-banner">
+    <div class="winner-banner-inner">
+        <span class="winner-banner-icon">🎉</span>
+        <div class="winner-banner-text">
+            <strong>Congratulations to {{ latest_winner.participant.full_name }}</strong>
+            for winning this month's pool of
+            <span class="winner-prize">Rs. {{ latest_winner.prize_amount|floatformat:0 }}</span>
+            in <em>{{ latest_winner.group.name }}</em>
+            ({{ latest_winner.month }}/{{ latest_winner.year }})
+        </div>
+    </div>
+</div>
+{% endif %}

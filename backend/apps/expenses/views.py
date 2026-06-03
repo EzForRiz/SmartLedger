@@ -78,23 +78,43 @@ def validate_common(data):
     }, None
 
 
+def validate_income(data):
+    try:
+        amount = float(data.get("amount", 0))
+    except (TypeError, ValueError):
+        return None, "Invalid amount"
+
+    if amount <= 0:
+        return None, "Amount must be positive"
+
+    effective_from = parse_date(data.get("effective_from"))
+    if not effective_from:
+        return None, "Invalid date"
+
+    if effective_from > timezone.localdate():
+        return None, "Future dates not allowed"
+
+    return {
+        "amount": amount,
+        "effective_from": effective_from,
+    }, None
+
+
 # ─────────────────────────────────────────────
 # PAGE VIEWS
 # ─────────────────────────────────────────────
 
 @login_required
 def dashboard(request):
-    return render(request, "dashboard.html")
+    from apps.rosca.services import get_latest_winner
+
+    winner = get_latest_winner()
+    return render(request, "dashboard.html", {"latest_winner": winner})
 
 
 @login_required
 def home(request):
     return render(request, "index.html")
-
-
-@login_required
-def rosca(request):
-    return render(request, "rosca.html")
 
 
 # ─────────────────────────────────────────────
@@ -193,38 +213,61 @@ def expense_detail(request, id):
 def income_view(request):
 
     if request.method == "GET":
-        # Most recent income record
-        income = IncomeHistory.objects.filter(user=request.user).first()
-        if not income:
-            return JsonResponse({"success": True, "data": None})
+        today = timezone.localdate()
+        total = get_income_for_month(request.user, today)
+        return JsonResponse({
+            "success": True,
+            "data": {"monthly_total": total} if total > 0 else None,
+        })
 
+    data = json.loads(request.body)
+    validated, error = validate_income(data)
+    if error:
+        return JsonResponse({"success": False, "error": error}, status=400)
+
+    income = IncomeHistory.objects.create(
+        user=request.user,
+        amount=validated["amount"],
+        effective_from=validated["effective_from"],
+    )
+
+    return JsonResponse({"success": True, "id": income.id}, status=201)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["GET", "PUT", "DELETE"])
+def income_detail(request, id):
+    try:
+        income = IncomeHistory.objects.get(id=id, user=request.user)
+    except IncomeHistory.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Not found"}, status=404)
+
+    if request.method == "GET":
         return JsonResponse({
             "success": True,
             "data": {
+                "id": income.id,
                 "amount": float(income.amount),
                 "effective_from": str(income.effective_from),
             },
         })
 
-    data = json.loads(request.body)
+    if request.method == "DELETE":
+        income.delete()
+        return JsonResponse({"success": True})
 
-    try:
-        amount = float(data.get("amount", 0))
-    except (TypeError, ValueError):
-        return JsonResponse({"success": False, "error": "Invalid amount"}, status=400)
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        validated, error = validate_income(data)
+        if error:
+            return JsonResponse({"success": False, "error": error}, status=400)
 
-    effective_from = parse_date(data.get("effective_from"))
+        income.amount = validated["amount"]
+        income.effective_from = validated["effective_from"]
+        income.save()
 
-    if amount <= 0 or not effective_from:
-        return JsonResponse({"success": False, "error": "Invalid input"}, status=400)
-
-    IncomeHistory.objects.create(
-        user=request.user,
-        amount=amount,
-        effective_from=effective_from,
-    )
-
-    return JsonResponse({"success": True})
+        return JsonResponse({"success": True})
 
 
 # ─────────────────────────────────────────────
@@ -331,9 +374,10 @@ def income_history_view(request):
     records = IncomeHistory.objects.filter(user=request.user).order_by("-effective_from")
     data = [
         {
+            "id":             r.id,
             "amount":         float(r.amount),
             "effective_from": str(r.effective_from),
-            "created_at":     r.created_at.strftime("%d %b %Y, %I:%M %p"),
+            "created_at":     r.created_at.isoformat(),
         }
         for r in records
     ]

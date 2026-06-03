@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ROSCA — Smart Ledger{% endblock %}
+{% block nav_rosca %}active{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    {% include "rosca/partials/winner_banner.html" %}
+
+    <div class="rosca-hero">
+        <div class="rosca-badge rosca-badge-live">✅ Live</div>
+        <h1 class="rosca-title">ROSCA Committee</h1>
+        <p class="rosca-subtitle">
+            Rotating Savings &amp; Credit Association — join a digital committee, pay monthly,
+            and participate in the lucky draw for the full pool payout.
+        </p>
+
+        <div class="rosca-cta-row">
+            {% if participant %}
+            <a href="{% url 'rosca_account' %}" class="btn btn-submit">My Committee Account</a>
+            {% else %}
+            <a href="{% url 'rosca_register' %}" class="btn btn-submit">Join a Pool</a>
+            {% endif %}
+            {% if user.is_staff %}
+            <a href="{% url 'rosca_admin_draw' %}" class="btn">Admin Draw</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <h2 class="features-heading">Active Pools</h2>
+
+    {% if active_pools %}
+    <div class="rosca-pools-grid">
+        {% for pool in active_pools %}
+        <div class="rosca-pool-card">
+            <h3>{{ pool.name }}</h3>
+            <div class="pool-stat">
+                <span class="pool-stat-label">Monthly Contribution</span>
+                <span class="pool-stat-value">Rs. {{ pool.monthly_contribution|floatformat:0 }}</span>
+            </div>
+            <div class="pool-stat">
+                <span class="pool-stat-label">Prize Pool</span>
+                <span class="pool-stat-value prize">Rs. {{ pool.total_payout|floatformat:0 }}</span>
+            </div>
+            <div class="pool-stat">
+                <span class="pool-stat-label">Duration</span>
+                <span class="pool-stat-value">{{ pool.duration_months }} months</span>
+            </div>
+            <div class="pool-stat">
+                <span class="pool-stat-label">Members</span>
+                <span class="pool-stat-value">{{ pool.member_count }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="rosca-empty-note">No active pools yet. Ask an admin to create one in Django Admin.</p>
+    {% endif %}
+
+    <h2 class="features-heading">How It Works</h2>
+
+    <div class="rosca-features-grid">
+        <div class="rosca-feature-card">
+            <div class="feature-icon">📝</div>
+            <h3>Register</h3>
+            <p>Choose an active pool, enter your details and CNIC, and join the committee.</p>
+            <div class="feature-status planned">Step 1</div>
+        </div>
+        <div class="rosca-feature-card">
+            <div class="feature-icon">💳</div>
+            <h3>Monthly Deposit</h3>
+            <p>Pay your fixed contribution each month from your personal account dashboard.</p>
+            <div class="feature-status planned">Step 2</div>
+        </div>
+        <div class="rosca-feature-card">
+            <div class="feature-icon">🎲</div>
+            <h3>Lucky Draw</h3>
+            <p>Eligible members who paid on time enter the draw. One winner takes the full pool.</p>
+            <div class="feature-status planned">Step 3</div>
+        </div>
+        <div class="rosca-feature-card">
+            <div class="feature-icon">🏆</div>
+            <h3>Winner Announcement</h3>
+            <p>Winners are displayed on the dashboard and ROSCA home page for everyone to see.</p>
+            <div class="feature-status planned">Step 4</div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

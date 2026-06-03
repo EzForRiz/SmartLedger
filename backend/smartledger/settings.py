@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'apps.expenses',
     'apps.ai_insights',
+    'apps.rosca',
 ]
 
 MIDDLEWARE = [

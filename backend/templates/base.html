@@ -32,6 +32,9 @@
                 <li class="nav-item">
                     <a href="/rosca/" class="{% block nav_rosca %}{% endblock %}"> ROSCA</a>
                 </li>
+                <li class="nav-item">
+                    <a href="/financial-insights/" class="{% block nav_insights %}{% endblock %}"> Insights</a>
+                </li>
                 {% if user.is_authenticated %}
                 <li class="nav-item">
                     <span class="nav-username">👤 {{ user.username }}</span>

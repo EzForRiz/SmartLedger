@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Committee Account — Smart Ledger{% endblock %}
+{% block nav_rosca %}active{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    {% include "rosca/partials/winner_banner.html" %}
+
+    <div class="page-header">
+        <div>
+            <h1>Account &amp; Deposit</h1>
+            <p class="page-subtitle">{{ participant.group.name }} — {{ participant.full_name }}</p>
+        </div>
+        <a href="{% url 'rosca_index' %}" class="btn">← ROSCA Home</a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="message message-{{ message.tags|default:'success' }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="stats-container">
+        <div class="stat-card" style="border-top: 2px solid #43e097;">
+            <div class="stat-label">🏦 Committee</div>
+            <div class="stat-value" style="font-size:1.25rem;">{{ participant.group.name }}</div>
+            <div class="stat-sub">Rs. {{ participant.group.monthly_contribution|floatformat:0 }}/month</div>
+        </div>
+
+        <div class="stat-card month-stat">
+            <div class="stat-label">📅 Months Paid</div>
+            <div class="stat-value">{{ months_paid }} / {{ total_months }}</div>
+            <div class="stat-sub">Successful deposits</div>
+        </div>
+
+        <div class="stat-card" style="border-top: 2px solid #f472b6;">
+            <div class="stat-label">⏳ Current Month</div>
+            <div class="stat-value">{{ current_month }}/{{ current_year }}</div>
+            <div class="stat-sub">
+                {% if current_paid %}✅ Paid{% else %}Due: Rs. {{ pending_amount|floatformat:0 }}{% endif %}
+            </div>
+        </div>
+
+        <div class="stat-card" style="border-top: 2px solid #a78bfa;">
+            <div class="stat-label">🏆 Draw Status</div>
+            <div class="stat-value" style="font-size:1.1rem;">
+                {% if has_won %}Won this cycle{% else %}Eligible{% endif %}
+            </div>
+            <div class="stat-sub">Prize: Rs. {{ participant.group.total_payout|floatformat:0 }}</div>
+        </div>
+    </div>
+
+    <div class="rosca-deposit-card">
+        <div class="rosca-deposit-info">
+            <h3>Monthly Contribution</h3>
+            {% if current_paid %}
+            <p>You have already deposited for {{ current_month }}/{{ current_year }}. Come back next month!</p>
+            {% else %}
+            <p>Deposit <strong>Rs. {{ pending_amount|floatformat:0 }}</strong> for {{ current_month }}/{{ current_year }} to stay eligible for this month's draw.</p>
+            {% endif %}
+        </div>
+
+        {% if not current_paid %}
+        <form method="post" action="{% url 'rosca_deposit' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-submit">💳 Deposit Money</button>
+        </form>
+        {% else %}
+        <button class="btn btn-submit" disabled>Already Deposited</button>
+        {% endif %}
+    </div>
+
+    {% if payment_history %}
+    <div class="table-card">
+        <div class="table-header">
+            <h3>Payment History</h3>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Amount</th>
+                        <th>Transaction ID</th>
+                        <th>Date</th>
+                        <th>Receipt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payment_history %}
+                    <tr>
+                        <td>{{ payment.month }}/{{ payment.year }}</td>
+                        <td>Rs. {{ payment.amount|floatformat:0 }}</td>
+                        <td><code class="txn-code">{{ payment.transaction_id }}</code></td>
+                        <td>{{ payment.paid_at|date:"d M Y, H:i" }}</td>
+                        <td>
+                            <a href="{% url 'rosca_receipt' payment.id %}" class="edit-btn" target="_blank">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="rosca-member-details">
+        <h3>Member Details</h3>
+        <p><strong>CNIC:</strong> {{ participant.cnic }}</p>
+        <p><strong>Phone:</strong> {{ participant.phone_number }}</p>
+        <p><strong>Joined:</strong> {{ participant.joined_at|date:"d M Y" }}</p>
+    </div>
+
+</div>
+{% endblock %}

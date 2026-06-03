@@ -1,3 +1,6 @@
 Django==6.0.1
-asgiref
-sqlparse
+asgiref==3.11.1
+sqlparse==0.5.5
+tzdata==2026.2
+python-dotenv==1.2.2
+groq==1.4.0
