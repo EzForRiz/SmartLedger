@@ -1,4 +1,4 @@
-# smartledger/asgi.py
+# backend/smartledger/asgi.py
 
 """
 ASGI config for smartledger project.

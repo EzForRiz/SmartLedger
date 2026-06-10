@@ -1,3 +1,5 @@
+# backend/apps/rosca/apps.py
+
 from django.apps import AppConfig
 
 

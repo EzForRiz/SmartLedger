@@ -1,4 +1,4 @@
-# backend/expenses/services.py
+# backend/apps/expenses/services.py
 
 from django.db.models import Sum
 from .models import Expense, IncomeHistory

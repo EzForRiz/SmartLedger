@@ -1,4 +1,4 @@
-# smartledger/urls.py
+# backend/smartledger/urls.py
 
 
 from django.contrib import admin

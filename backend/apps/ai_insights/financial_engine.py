@@ -1,3 +1,5 @@
+#backend/apps/ai_insights/financial_engine.py
+
 """
 Rule-based financial insights engine.
 

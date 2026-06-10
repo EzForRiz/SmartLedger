@@ -1,3 +1,5 @@
+# backend/apps/rosca/admin.py
+
 from django.contrib import admin
 
 from .models import DrawWinner, Participant, PaymentRecord, ROSCAGroup
