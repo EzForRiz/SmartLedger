@@ -1024,6 +1024,70 @@ tbody tr:last-child {
 .auth-switch a:hover {
     text-decoration: underline;
 }
+/* ==========================
+   AUTH DIVIDER
+========================== */
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+    color: var(--text-secondary);
+    font-size: .85rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,.12);
+}
+
+.auth-divider span {
+    padding: 0 .9rem;
+    letter-spacing: .08em;
+    font-weight: 600;
+}
+
+/* ==========================
+   ADMIN BUTTON
+========================== */
+
+.btn-admin {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: .6rem;
+
+    width: 100%;
+    padding: 1rem;
+
+    text-decoration: none;
+
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(124,111,234,.35);
+
+    color: #a78bfa;
+
+    transition: .25s ease;
+}
+
+.btn-admin:hover {
+    background: rgba(124,111,234,.15);
+    border-color: #7c6fea;
+    color: white;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 20px rgba(124,111,234,.25),
+        0 0 20px rgba(124,111,234,.15);
+}
+
+.btn-admin:active {
+    transform: translateY(0);
+}
 
 /* ===== ROSCA PAGE ===== */
 .rosca-hero {
