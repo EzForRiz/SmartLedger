@@ -9,8 +9,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('SECRET_KEY')
+
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['smartledger.pythonanywhere.com']
+
+# DEBUG = True
+# ALLOWED_HOSTS = ['*']
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 
 INSTALLED_APPS = [
